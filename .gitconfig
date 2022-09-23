@@ -1,19 +1,12 @@
 [user]
 	name = Christerpher Hunter
 	email = djhunter67@gmail.com
-
-[author]
-	name = Christerpher Hunter
-	email = djhunter67@gmail.com	
-
-
 [credential]
 	helper = cache --timeout=10800000
 [color]
 	ui = true
 [core]
 	excludesfile = /home/djhunter67/.gitignore_global
-	editor = /usr/bin/emacs
 [help]
 	autocorrect = 40
 [alias]
@@ -21,17 +14,3 @@
 	cm = commit -am
 	rv = remote -v
 	gl = config --global -l
-	a = add .
-
-[init]
-	defaultBranch = trunk
-
-[merge]
-	conflictStyle = diff3
-
-[status]
-	showStash = true
-
-
-
-
