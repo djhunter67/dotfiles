@@ -257,10 +257,10 @@ function venv() {
     pip install -U pip setuptools >/dev/null &&
     git init &> /dev/null &&
     git branch -M trunk &&
-    echo > README.md &&
-    echo > LICENSE &&
-    echo > CHANGELOG.md &&
-	cat <<EOT >> CHANGELOG.md
+    [ -f README.md ] &&  echo > README.md &&
+    [ -f LICENSE ]  && echo > LICENSE &&
+    [ -f CHANGELOG.md ] && echo > CHANGELOG.md &&
+    cat <<EOT >> CHANGELOG.md
 	# CHANGELOG
 
 Author: Hunter, Christerpher
