@@ -316,7 +316,7 @@ EOT
 
 #source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 # Lines configured by zsh-newuser-install
-HISTFILE=~/.histfile
+HISTFILE=~/.zsh_history
 HISTSIZE=4294967296
 SAVEHIST=4294967296
 setopt beep extendedglob nomatch
