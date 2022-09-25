@@ -6,8 +6,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
     source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -263,23 +261,23 @@ function venv() {
     cat <<EOT >> CHANGELOG.md
 	# CHANGELOG
 
-Author: Hunter, Christerpher
+    Author: Hunter, Christerpher
 
-All notable changes will be appended here.
+    All notable changes will be appended here.
 
-This project, henceforth, will recongnize [semantic versioning](https://semver.org/).
+    This project, henceforth, will recongnize [semantic versioning](https://semver.org/).
 
-## [⭐.✴️.✳️] - YEAR MONTH DAY
+    ## [⭐.✴️.✳️] - YEAR MONTH DAY
 
-Here we write upgrade and change notes.
+    Here we write upgrade and change notes.
 
-⭐ MAJOR version when you make incompatible API changes,
+    ⭐ MAJOR version when you make incompatible API changes,
 
-✴️ MINOR version when you add functionality in a backwards compatible manner
+    ✴️ MINOR version when you add functionality in a backwards compatible manner
 
-✳️ PATCH version when you make backwards compatible bug fixes.
+    ✳️ PATCH version when you make backwards compatible bug fixes.
 
---------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
 EOT
     cat /home/djhunter67/.gitignore_global > .gitignore &&
 	mkdir src &&
@@ -292,7 +290,7 @@ This PR...
 ## Changes
 
 -
-## Screenshots
+## Screenshotsg10
 
 (prefer animated gif)
 
@@ -314,14 +312,12 @@ EOT
 
 
 
-#source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.zsh_history
 HISTSIZE=4294967296
 SAVEHIST=4294967296
 setopt beep extendedglob nomatch
-# End of lines configured by zsh-newuser-install
-source ~/powerlevel10k/powerlevel10k.zsh-theme
-source ~/powerlevel10k/powerlevel10k.zsh-theme
-source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /home/djhunter67/.BUILDS/zsh-syntax-
 
+highlighting/zsh-syntax-highlighting.zsh
