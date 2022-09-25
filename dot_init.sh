@@ -1,14 +1,48 @@
-#!/usr/bin/bash
+#!/bin/bash
+
+# Stop on a nonzero return of any command
+set -e
+# Run as root
+if [ "$UID" -ne "$ROOT_UID" ]
+then
+    echo "Must be root to run this script."
+    exit $E_NOTROOT
+fi  
 
 # Make the work directory
 pushd ~/Documents 
-[[ ! -d "work_worK_woRk_wOrk_Work_WORK" ]] && mkdir work_worK_woRk_wOrk_Work_WORK;
+[[ -d "work_worK_woRk_wOrk_Work_WORK" ]] && mkdir work_worK_woRk_wOrk_Work_WORK;
 
 popd  # go to  home directory
 
 # Make the development directory
-[[ ! -d "dev" ]] && mkdir dev
+[[ -d "dev" ]] && mkdir dev
 
 # Create the .BUILD directory
-[[ ! -d ".BUILDS" ]] && mkdir .BUILDS
+[[ -d ".BUILDS" ]] && mkdir .BUILDS
+
+# Create ssh key to pull the dotfiles repo from github
+[[ -f ".ssh/id_ed22519_base_key.pub"  ]] && ssh-key -t ed25519 -N "" -f /home/${USER}/.ssh/id_ed25519_base_key -q
+
+# Blocking command to show the pub key; Add keys to github repo(s)
+less ~/.ssh/id_ed25519_base_key.pub
+
+# When command closes clone dotfiles repo
+sudo pacman -S git base-devel
+git clone git@github.com:djhunter67/dotfiles.git
+
+# Link to .zshrc that came from dotfiles
+[[ -f ".zshrc"  ]] && ln -s dotfiles/.zshrc .zshrc
+
+# Link to .zsh_history
+[[ -f ".zsh_history" ]] && rm .zsh_history
+ln -s dotfiles/.zsh_history .zsh_history
+
+# Link to .emacs; remove any existing file
+[[ -f ".emacs" ]] && rm -rf ~/.emacs
+ln -s dotfiles/.emacs .emacs
+
+# Link gitconfig
+ln -s dotfiles/.gitconfig .gitconfig
+
 

@@ -1,33 +1,38 @@
-
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-ZSH_THEME="powerlevel10k/powerlevel10k"
+# Stop script of any command return non-zero
+# set -e
+
+
+#zsh_theme="powerlevel10k/powerlevel10k"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+#[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-export LC_CTYPE="en_US.UTF-8"
+# export LC_CTYPE="en_US.UTF-8"
 
-plugins=(
-    colorize
-    command-not-found
-    zsh-completions
-    zsh-autosuggestions
-zsh-syntax-highlighting)
+############################
+# plugins=(		   #
+#     colorize		   #
+#     command-not-found	   #
+#     zsh-completions	   #
+#     zsh-autosuggestions  #
+# zsh-syntax-highlighting) #
+############################
 
-autoload -U compinit && compinit
-autoload -Uz vcs_info
-precmd_vcs_info() { vcs_info }
-precmd_functions+=( precmd_vcs_info )
-setopt prompt_subst
-RPROMPT='${vcs_info_msg_0_}'
+
+
+# precmd_vcs_info() { vcs_info }
+# precmd_functions += ( precmd_vcs_info )
+# setopt prompt_subst
+# RPROMPT='${vcs_info_msg_0_}'
 # PROMPT='${vcs_info_msg_0_}%# '
-zstyle ':vcs_info:git:*' formats '%b'
+# zstyle ':vcs_info:git:*' formats '%b'
 #fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 
 
@@ -42,12 +47,12 @@ if [ -d "$HOME/.local/bin" ] ; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-setopt INC_APPEND_HISTORY
-export HISTTIMEFORMAT="[%F %T] "
+# setopt INC_APPEND_HISTORY
+# export HISTTIMEFORMAT="[%F %T] "
 # Add timestampt to command
-setopt EXTENDED_HISTORY
+# setopt EXTENDED_HISTORY
 # No Duplicates
-setopt HIST_IGNORE_ALL_DUPS
+# setopt HIST_IGNORE_ALL_DUPS
 
 # # Use powerline
 # USE_POWERLINE="true"
@@ -249,66 +254,66 @@ function r_sync(){
 # The virtual environment will be activated and pip updated.  Basic directory structure will be set up.
 # The venv function will suppress all output except the last line; git init.
 function venv() {
-    
-    python3.10 -m venv venv &&
-    source venv/bin/activate &&
-    pip install -U pip setuptools >/dev/null &&
-    git init &> /dev/null &&
-    git branch -M trunk &&
-    [ -f README.md ] &&  echo > README.md &&
-    [ -f LICENSE ]  && echo > LICENSE &&
-    [ -f CHANGELOG.md ] && echo > CHANGELOG.md &&
-    cat <<EOT >> CHANGELOG.md
-	# CHANGELOG
-
-    Author: Hunter, Christerpher
-
-    All notable changes will be appended here.
-
-    This project, henceforth, will recongnize [semantic versioning](https://semver.org/).
-
-    ## [⭐.✴️.✳️] - YEAR MONTH DAY
-
-    Here we write upgrade and change notes.
-
-    ⭐ MAJOR version when you make incompatible API changes,
-
-    ✴️ MINOR version when you add functionality in a backwards compatible manner
-
-    ✳️ PATCH version when you make backwards compatible bug fixes.
-
-    --------------------------------------------------------------------------------
-EOT
-    cat /home/djhunter67/.gitignore_global > .gitignore &&
-	mkdir src &&
-    mkdir .github &&
-	mkdir .github/workflows &&
-    echo > .github/pull_request_template.md &&
-	cat <<EOT >> .github/pull_request_template.md
-This PR...
-
-## Changes
-
--
-## Screenshotsg10
-
-(prefer animated gif)
-
-## Checklist
-
-- [ ] synced trunk
-- [ ] tested locally
-- [ ] added new dependencies
-- [ ] updated the docs
-- [ ] added a test
-
-# Fixes 
-
-EOT
-    git add . &> /dev/null &&
-    git cm "init git" &> /dev/null &&
-    tre -L 3 -I venv 
-}
+    											       
+    python3.10 -m venv venv &&							       
+    source venv/bin/activate &&							       
+    pip install -U pip setuptools >/dev/null &&					       
+    git init &> /dev/null &&								       
+    git branch -M trunk &&								       
+    [ -f README.md ] &&  echo > README.md &&						       
+    [ -f LICENSE ]  && echo > LICENSE &&						       
+    [ -f CHANGELOG.md ] && echo > CHANGELOG.md &&					       
+    cat > CHANGELOG.md << EOT 							       
+# CHANGELOG										       
+											       
+Author: Hunter, Christerpher								       
+											       
+All notable changes will be appended here.						       
+											       
+This project, henceforth, will recongnize [semantic versioning](https://semver.org/).	       
+											       
+## [⭐.✴️.✳️] - YEAR MONTH DAY								       
+											       
+Here we write upgrade and change notes.						       
+											       
+⭐ MAJOR version when you make incompatible API changes,				       
+											       
+✴️ MINOR version when you add functionality in a backwards compatible manner		       
+											       
+✳️ PATCH version when you make backwards compatible bug fixes.				       
+											       
+--------------------------------------						       
+EOT											       
+    cat /home/djhunter67/.gitignore_global > .gitignore &&				       
+	mkdir src &&									       
+    mkdir .github &&									       
+	mkdir .github/workflows &&							       
+    echo > .github/pull_request_template.md &&					       
+	cat > .github/pull_request_template.md << EOT  					       
+This PR...										       
+											       
+## Changes										       
+											       
+-											       
+## Screenshotsg10									       
+											       
+(prefer animated gif)									       
+											       
+## Checklist										       
+											       
+- [ ] synced trunk									       
+- [ ] tested locally									       
+- [ ] added new dependencies								       
+- [ ] updated the docs								       
+- [ ] added a test									       
+											       
+# Fixes 										       
+											       
+EOT											       
+    git add . &> /dev/null &&								       
+    git cm "init git" &> /dev/null &&							       
+    tre -L 3 -I venv 									       
+}											       
 
 
 
@@ -318,6 +323,7 @@ HISTFILE=~/.zsh_history
 HISTSIZE=4294967296
 SAVEHIST=4294967296
 setopt beep extendedglob nomatch
-source /home/djhunter67/.BUILDS/zsh-syntax-
+source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-highlighting/zsh-syntax-highlighting.zsh
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
