@@ -1,13 +1,14 @@
+#!/bin/zsh
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
+# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# fi
 
 # Stop script of any command return non-zero
 # set -e
-
 
 #zsh_theme="powerlevel10k/powerlevel10k"
 
@@ -16,34 +17,30 @@ fi
 
 # export LC_CTYPE="en_US.UTF-8"
 
-############################
-# plugins=(		   #
-#     colorize		   #
-#     command-not-found	   #
-#     zsh-completions	   #
-#     zsh-autosuggestions  #
-# zsh-syntax-highlighting) #
-############################
-
-
+###########################
+plugins=(
+    colorize
+    command-not-found
+    zsh-completions
+    zsh-autosuggestions
+    zsh-syntax-highlighting)
+###########################
 
 # precmd_vcs_info() { vcs_info }
 # precmd_functions += ( precmd_vcs_info )
-# setopt prompt_subst
+setopt prompt_subst
 # RPROMPT='${vcs_info_msg_0_}'
 # PROMPT='${vcs_info_msg_0_}%# '
-# zstyle ':vcs_info:git:*' formats '%b'
-#fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
-
+zstyle ':vcs_info:git:*' formats '%b'
+fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 
 # Make any executable placed in ~/bin discoverable on $PATH
-if [ -d "$HOME/bin" ] ; then
+if [ -d "$HOME/bin" ]; then
     export PATH="$HOME/bin:$PATH"
 fi
 
-
 # Make any executable placed in ~/.local/bin discoverable on $PATH
-if [ -d "$HOME/.local/bin" ] ; then
+if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
@@ -53,20 +50,6 @@ fi
 # setopt EXTENDED_HISTORY
 # No Duplicates
 # setopt HIST_IGNORE_ALL_DUPS
-
-# # Use powerline
-# USE_POWERLINE="true"
-# # Source manjaro-zsh-configuration
-# if [[ -e /usr/share/zsh/manjaro-zsh-config ]]; then
-#   source /usr/share/zsh/manjaro-zsh-config
-# fi
-# # Use manjaro zsh prompt
-# if [[ -e /usr/share/zsh/manjaro-zsh-prompt ]]; then
-#   source /usr/share/zsh/manjaro-zsh-prompt
-# fi
-
-# # Change caps lock to left CTRL
-#xmodmap ~/.Xmodmap
 
 # Color for manpages
 #
@@ -80,41 +63,40 @@ export LESS_TERMCAP_us=$'\E[01;32m'
 
 # Increase Bash history size. Allow 32³ entries; the default is 500.
 #
-export HISTSIZE='32768';
-export HISTFILESIZE="${HISTSIZE}";
+export HISTSIZE='32768'
+export HISTFILESIZE="${HISTSIZE}"
 
 # Ignore duplicates, ls without options and builtin commands
 #
 export HISTCONTROL=ignoreboth
-export HISTIGNORE="&:ls:[bf]g:exit";
+export HISTIGNORE="&:ls:[bf]g:exit"
 
 # Make emacs the default editor.
 #
-export EDITOR='emacs';
+export EDITOR='emacs'
 
 # Change caps lock to left CTRL
 #xmodmap ~/.Xmodmap
 
 # Make Python use UTF-8 encoding for output to stdin, stdout, and stderr.
 #
-export PYTHONIOENCODING='UTF-8';
+export PYTHONIOENCODING='UTF-8'
 
 # Make Python use UTF-8 encoding for output to stdin, stdout, and stderr.
 #
-export PYTHONIOENCODING='UTF-8';
+export PYTHONIOENCODING='UTF-8'
 
 # Prefer US English and use UTF-8.
 #
-export LANG='en_US.UTF-8';
-export LC_ALL='en_US.UTF-8';
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
 
 # Highlight section titles in manual pages.
 #
-export LESS_TERMCAP_md="${yellow}";
+export LESS_TERMCAP_md="${yellow}"
 
 # Golang Library and dependancies
-#
-#export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:/usr/local/go/bin
 
 #######################################
 # User specific aliases
@@ -147,7 +129,6 @@ alias icat="kitty +kitten icat"
 alias la="pls -a -d -s mtime -u decimal -i nerd -c --no-dirs"
 alias dif="kitty +kitten diff"
 
-
 # cd into the old directory
 #
 alias bd='cd "$OLDPWD"'
@@ -158,7 +139,7 @@ alias bd='cd "$OLDPWD"'
 
 # Grep, egrep, zgrep colors
 #
-alias grep='grep --color=auto'  # GREP_OPTIONS is deprecated
+alias grep='grep --color=auto' # GREP_OPTIONS is deprecated
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
@@ -197,11 +178,10 @@ alias DELUGE='rm -rf ~/Downloads/DELUGE/*'
 
 # Replace up../../../../
 #
-up(){
+up() {
     local d=""
     limit=$1
-    for ((i=1 ; i <= limit ; i++))
-    do
+    for ((i = 1; i <= limit; i++)); do
         d=$d/..
     done
     d=$(echo $d | sed 's/^\///')
@@ -215,26 +195,26 @@ up(){
 # Create a new directory and enter it
 #
 function mkd() {
-    mkdir -p "$@" && cd "$_";
+    mkdir -p "$@" && cd "$_"
 }
 
 # Use Git’s colored diff when available
 #
-hash git &>/dev/null;
+hash git &>/dev/null
 if [ $? -eq 0 ]; then
     function diff() {
-        git diff --no-index --color-words "$@";
+        git diff --no-index --color-words "$@"
     }
-fi;
+fi
 
 # Create a data URL from a file
 #
 function dataurl() {
-    local mimeType=$(file -b --mime-type "$1");
+    local mimeType=$(file -b --mime-type "$1")
     if [[ $mimeType == text/* ]]; then
-        mimeType="${mimeType};charset=utf-8";
+        mimeType="${mimeType};charset=utf-8"
     fi
-    echo "data:${mimeType};base64,$(openssl base64 -in "$1" | tr -d '\n')";
+    echo "data:${mimeType};base64,$(openssl base64 -in "$1" | tr -d '\n')"
 }
 
 # `tre` is a shorthand for `tree` with hidden files and color enabled, ignoring
@@ -243,10 +223,10 @@ function dataurl() {
 # small enough for one screen.
 #
 function tre() {
-    tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
+    tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX
 }
 
-function r_sync(){
+function r_sync() {
     rsync -Paurvh --stats --progress $1 $2
 }
 
@@ -254,16 +234,16 @@ function r_sync(){
 # The virtual environment will be activated and pip updated.  Basic directory structure will be set up.
 # The venv function will suppress all output except the last line; git init.
 function venv() {
-    											       
-    python3.10 -m venv venv &&							       
-    source venv/bin/activate &&							       
-    pip install -U pip setuptools >/dev/null &&					       
-    git init &> /dev/null &&								       
-    git branch -M trunk &&								       
-    [ -f README.md ] &&  echo > README.md &&						       
-    [ -f LICENSE ]  && echo > LICENSE &&						       
-    [ -f CHANGELOG.md ] && echo > CHANGELOG.md &&					       
-    cat > CHANGELOG.md << EOT 							       
+
+    python3.10 -m venv venv &&
+        source venv/bin/activate &&
+        pip install -U pip setuptools >/dev/null &&
+        git init &>/dev/null &&
+        git branch -M trunk &&
+        [ -f README.md ] && echo >README.md &&
+        [ -f LICENSE ] && echo >LICENSE &&
+        [ -f CHANGELOG.md ] && echo >CHANGELOG.md &&
+        cat <<EOT >>CHANGELOG.md
 # CHANGELOG										       
 											       
 Author: Hunter, Christerpher								       
@@ -283,13 +263,13 @@ Here we write upgrade and change notes.
 ✳️ PATCH version when you make backwards compatible bug fixes.				       
 											       
 --------------------------------------						       
-EOT											       
-    cat /home/djhunter67/.gitignore_global > .gitignore &&				       
-	mkdir src &&									       
-    mkdir .github &&									       
-	mkdir .github/workflows &&							       
-    echo > .github/pull_request_template.md &&					       
-	cat > .github/pull_request_template.md << EOT  					       
+EOT
+    cat /home/djhunter67/.gitignore_global >.gitignore &&
+        mkdir src &&
+        mkdir .github &&
+        mkdir .github/workflows &&
+        echo >.github/pull_request_template.md &&
+        cat <<EOT >>.github/pull_request_template.md
 This PR...										       
 											       
 ## Changes										       
@@ -309,13 +289,11 @@ This PR...
 											       
 # Fixes 										       
 											       
-EOT											       
-    git add . &> /dev/null &&								       
-    git cm "init git" &> /dev/null &&							       
-    tre -L 3 -I venv 									       
-}											       
-
-
+EOT
+    git add . &>/dev/null &&
+        git cm "init git" &>/dev/null &&
+        tre -L 3 -I venv
+}
 
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 # Lines configured by zsh-newuser-install
