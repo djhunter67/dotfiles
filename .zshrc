@@ -1,3 +1,14 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_ALL_DUPS
+unsetopt HIST_IGNORE_DUPS
 #!/bin/zsh
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
@@ -32,7 +43,9 @@ setopt prompt_subst
 # RPROMPT='${vcs_info_msg_0_}'
 # PROMPT='${vcs_info_msg_0_}%# '
 zstyle ':vcs_info:git:*' formats '%b'
-fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+#fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+
 
 # Make any executable placed in ~/bin discoverable on $PATH
 if [ -d "$HOME/bin" ]; then
@@ -104,21 +117,10 @@ export PATH=$PATH:/usr/local/go/bin
 
 # alias python='/usr/local/bin/python3.10'
 # alias pip='/usr/local/bin/python3.10 -m pip'
-alias ssh='kitty +kitten ssh'
-alias Ripley='kitty +kitten ssh root@192.168.110.24'
-alias Pi='kitty +kitten ssh pi@192.168.110.78'
-alias ripley_01='kitty +kitten ssh ripley_01@192.168.110.1'
-alias ripley_02='kitty +kitten ssh ripley_02@192.168.110.2'
-alias ripley_03='kitty +kitten ssh ripley_03@192.168.110.3'
-alias ripley_04='kitty +kitten ssh ripley_04@192.168.110.4'
-alias ripley_05='kitty +kitten ssh ripley_05@192.168.110.5'
-alias ripley_06='kitty +kitten ssh ripley_06@192.168.110.6'
-alias ripley_07='kitty +kitten ssh ripley_07@192.168.110.7'
-alias ripley_08='kitty +kitten ssh ripley_08@192.168.110.8'
-alias ripley_00='kitty +kitten ssh -X ripley_00@192.168.110.9'
-alias anse='cd ~/ansible && ansible-playbook -i inventory --forks 18 --ask-vault-pass --extra-vars '@passwords.yml' $1'
+[ "$TERM" = "xterm-kitty" ] && alias ssh='kitty +kitten ssh'
+alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
-alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; gphoto2 --stdout --capture-movie | ffmpeg -hwaccel nvdec -c:v mjpeg_cuvid -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"
+alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; pkill -f gphoto2;  gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
@@ -235,15 +237,16 @@ function r_sync() {
 # The venv function will suppress all output except the last line; git init.
 function venv() {
 
-    python3.10 -m venv venv &&
-        source venv/bin/activate &&
-        pip install -U pip setuptools >/dev/null &&
-        git init &>/dev/null &&
-        git branch -M trunk &&
-        [ -f README.md ] && echo >README.md &&
-        [ -f LICENSE ] && echo >LICENSE &&
-        [ -f CHANGELOG.md ] && echo >CHANGELOG.md &&
-        cat <<EOT >>CHANGELOG.md
+    python3.11 -m venv venv
+    source venv/bin/activate 
+    pip install -U pip setuptools >/dev/null 
+    git init &>/dev/null 
+    git branch -M trunk 
+    [[ -e ./README.md ]] && echo > README.md
+    [[ -e ./LICENSE ]] && echo > LICENSE
+    [[ -e ./CHANGELOG.md ]] && echo > CHANGELOG.md 
+    cat <<EOT >> CHANGELOG.md
+
 # CHANGELOG										       
 											       
 Author: Hunter, Christerpher								       
@@ -264,12 +267,15 @@ Here we write upgrade and change notes.
 											       
 --------------------------------------						       
 EOT
-    cat /home/djhunter67/.gitignore_global >.gitignore &&
-        mkdir src &&
-        mkdir .github &&
-        mkdir .github/workflows &&
-        echo >.github/pull_request_template.md &&
-        cat <<EOT >>.github/pull_request_template.md
+
+    [[ -f ~/.gitignore_global ]] && cat /home/djhunter67/.gitignore_global > .gitignore
+    mkdir -p ./src
+    mkdir -p .github 
+    mkdir -p .github/workflows
+    pushd .github
+    [[ -e pull_request_template ]] && echo >> pull_request_template.md
+    cat <<EOT >> pull_request_template.md
+
 This PR...										       
 											       
 ## Changes										       
@@ -290,12 +296,14 @@ This PR...
 # Fixes 										       
 											       
 EOT
+    popd
     git add . &>/dev/null &&
         git cm "init git" &>/dev/null &&
         tre -L 3 -I venv
 }
 
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.zsh_history
 HISTSIZE=4294967296

@@ -1,9 +1,33 @@
+<<<<<<< HEAD
+
+;; Profile emacs startup
+(add-hook 'emacs-startup-hook
+	  (lambda ()
+	    (message "*** Emacs loaded in %s with %d garbage collections."
+		     (format "%.2f seconds"
+			     (float-time
+			      (time-subtract after-init-time before-init-time)))
+		     gcs-done)))
+
+
+;; Silence compiler warnings as they are disruptive
+(setq native-comp-async-report-warnings-errors nil)
+
 ;; Append to emacs PATH
 (setq user-emacs-directory "~/.emacs.d")
 
+;; Don't pop up UI dialogs
+(setq use-dialog-box nil)
+
+;; Revert buffers when underlying file has changed
+(global-auto-revert-mode 1)
+
+;; Revert Dired buffer to live reload
+(setq global-auto-revert-non-file-buffers t)
+
 ;; You will most likely need to adjust this font size for your system!
-(defvar cvh/default-font-size 140)
-(defvar cvh/default-variable-font-size 140)
+(defvar cvh/default-font-size 120)
+(defvar cvh/default-variable-font-size 120)
 
 (require 'package)
 
@@ -12,11 +36,152 @@
                ("org"  .  "https://orgmode.org/elpa/")
                ("elpa" . "https://elpa.gnu.org/packages/")))
 
+
+=======
+(defvar myPackages
+  '(better-defaults
+    elpy
+    flycheck
+    py-autopep8
+    blacken
+    material-theme
+    )
+  )
+
+;; ====================================
+;; Development Setup
+;; ====================================
+
+;; Enable elpy
+(elpy-enable)
+
+;; Enable flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+
+;; Enable the Melpa repo
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+>>>>>>> 13bd536 (add: wakatime tracking in emacs)
 (package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+
+
+;; Enable wakatime
+(global-wakatime-mode)
+
+
+;; Enable autopep8
+;; (require 'py-autopep8)
+;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+
+(defun rk/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+;; Rust IDE feature
+(use-package lsp-mode
+  :ensure
+  :commands lsp
+  :custom
+  ;; what to use when checking on-save. "check" is default, I prefer clippy
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  ;; enable / disable the hints as you prefer:
+  (lsp-rust-analyzer-server-display-inlay-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+  (lsp-rust-analyzer-display-chaining-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+  (lsp-rust-analyzer-display-closure-return-type-hints t)
+  (lsp-rust-analyzer-display-parameter-hints nil)
+  (lsp-rust-analyzer-display-reborrow-hints nil)
+  :config
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+;; Company mode for Rust
+(use-package flycheck :ensure)
+(use-package company
+  :ensure
+  :custom
+  (company-idle-delay 0.5) ;; how long to wait until popup
+  ;; (company-begin-commands nil) ;; uncomment to disable popup
+  ;;:bind
+  ;;(:map company-active-map
+	      ;;("C-n". company-select-next)
+	      ;;("C-p". company-select-previous)
+	      ;;("M-<". company-select-first)
+	      ;;("M->". company-select-last)))
+
+(use-package yasnippet
+  :ensure
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'text-mode-hook 'yas-minor-mode))
+
+
+  (:map company-mode-map
+      ("<tab>". tab-indent-or-complete)
+      ("TAB". tab-indent-or-complete)))
+
+(defun company-yasnippet-or-completion ()
+  (interactive)
+  (or (do-yas-expand)
+      (company-complete-common)))
+
+(defun check-expansion ()
+  (save-excursion
+    (if (looking-at "\\_>") t
+      (backward-char 1)
+      (if (looking-at "\\.") t
+        (backward-char 1)
+        (if (looking-at "::") t nil)))))
+
+(defun do-yas-expand ()
+  (let ((yas/fallback-behavior 'return-nil))
+    (yas/expand)))
+
+(defun tab-indent-or-complete ()
+  (interactive)
+  (if (minibufferp)
+      (minibuffer-complete)
+    (if (or (not yas/minor-mode)
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (company-complete-common)
+          (indent-for-tab-command)))))
+
+;; inline inferred types
+(setq lsp-rust-analyzer-server-display-inlay-hints t)
+
+(use-package lsp-ui
+  :ensure
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable nil))
+
+
  
- ;; Initialize use-package on non-Linux platforms
+(require 'multiple-cursors)
+
+(add-to-list 'load-path "~/.emacs.d/copilot.el")
+(require 'copilot)
+
+
+;; Initialize use-package on non-Linux platforms
  (unless (package-installed-p 'use-package)
    (package-install 'use-package))
 
@@ -27,18 +192,32 @@
  (set-default-coding-systems 'utf-8)
  
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;; (use-package fira-code-mode								  ;;
- ;;   :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
- ;;   :hook prog-mode)  								  ;;
+;; (use-package fira-code-mode								  ;;
+  ;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
+  ;; :hook prog-mode)  								  ;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (set-face-attribute 'default nil :font "Fira Code Retina" :height cvh/default-font-size)
+(set-face-attribute 'default nil :font "Fira Code Retina" :height cvh/default-font-size)
 
 ;; Set the fixed pitch face
-;; (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
+(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
+
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
+;;(set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
 
 (use-package auto-package-update
   :custom
@@ -58,7 +237,175 @@
    '(nyan-animate-nyancat t)
    '(nyan-mode t)))
 
+;; Get and enable Elpy
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
+
+
+;; Get autopep8
+(use-package py-autopep8
+  :ensure t
+  )
+					;
+;; Get Copilot
+(require 'cl)
+(let ((pkg-list '(use-package
+		          s
+		          dash
+		          editorconfig
+                  company)))
+  ;; (package-initialize)
+  (when-let ((to-install (map-filter (lambda (pkg _) (not (package-installed-p pkg))) pkg-list)))
+    (package-refresh-contents)
+    (mapc (lambda (pkg) (package-install pkg)) pkg-list)))
+
+
+(use-package copilot
+  :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
+  ;; don't show in mode line
+  :diminish)
+  
 (setq inhibit-startup-message t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define custom keybinding ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Set C+; to comment entire line
+(global-set-key (kbd "C-;") 'comment-line)
+
+;; Switch buffers fast
+(global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
+(global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
+
+;; Multiple Cursors
+(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
+
+;; Delete line from cursor to beginning
+(global-set-key (kbd "S-<delete>") 'kill-whole-line)
+
+;; Immediately kill the focused buffer
+(global-unset-key (kbd "C-x k"))
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+;; Python mode --> autoformat tabs and comments
+(defun my-format-python-text ()
+  "untabify and wrap python comments"
+  (interactive)
+  (untabify (point-min) (point-max))
+  (goto-char (point-min))
+  (while (re-search-forward comment-start nil t)
+    (call-interactively 'fill-paragraph)
+    (forward-line 1)))
+
+(eval-after-load "python"
+  '(progn
+     (define-key python-mode-map (kbd "RET") 'newline-and-indent)
+     (define-key python-mode-map (kbd "<f4>") 'my-format-python-text)))
+
+;; Autopep8 execute
+(setq py-autopep8-options '("--max-line-length=100"))
+(define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer)
+
+;; Github Copilot
+(defun cvh/no-copilot-mode ()
+  "Helper for `cvh/no-copilot-modes'."
+  (copilot-mode -1))
+
+(defvar cvh/no-copilot-modes '(shell-mode
+                              inferior-python-mode
+                              eshell-mode
+                              term-mode
+                              vterm-mode
+                              comint-mode
+                              compilation-mode
+                              debugger-mode
+                              dired-mode-hook
+                              compilation-mode-hook
+                              flutter-mode-hook
+                              minibuffer-mode-hook)
+  "Modes in which copilot is inconvenient.")
+
+(defun cvh/copilot-disable-predicate ()
+  "When copilot should not automatically show completions."
+  (or cvh/copilot-manual-mode
+      (member major-mode cvh/no-copilot-modes)
+      (company--active-p)))
+
+(add-to-list 'copilot-disable-predicates #'cvh/copilot-disable-predicate)
+
+(defvar cvh/copilot-manual-mode nil
+  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
+
+(defun cvh/copilot-change-activation ()
+  "Switch between three activation modes:
+- automatic: copilot will automatically overlay completions
+- manual: you need to press a key (M-C-<return>) to trigger completions
+- off: copilot is completely disabled."
+  (interactive)
+  (if (and copilot-mode cvh/copilot-manual-mode)
+      (progn
+        (message "deactivating copilot")
+        (global-copilot-mode -1)
+        (setq cvh/copilot-manual-mode nil))
+    (if copilot-mode
+        (progn
+          (message "activating copilot manual mode")
+          (setq cvh/copilot-manual-mode t))
+      (message "activating copilot mode")
+      (global-copilot-mode))))
+
+(define-key global-map (kbd "C-.") #'cvh/copilot-change-activation)
+
+(defun cvh/copilot-complete-or-accept ()
+  "Command that either triggers a completion or accepts one if one
+is available. Useful if you tend to hammer your keys like I do."
+  (interactive)
+  (if (copilot--overlay-visible)
+      (progn
+        (copilot-accept-completion)
+        (open-line 1)
+        (next-line))
+    (copilot-complete)))
+
+(define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
+(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion)
+(define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
+(define-key copilot-mode-map (kbd "M-C-<down>") #'copilot-accept-completion-by-line)
+(define-key global-map (kbd "M-C-<return>") #'cvh/copilot-complete-or-accept)
+
+(defun cvh/copilot-tab ()
+  "Tab command that will complet with copilot if a completion is
+available. Otherwise will try company, yasnippet or normal
+tab-indent."
+  (interactive)
+  (or (copilot-accept-completion)
+      ;; (company-yasnippet-or-completion)
+      (indent-for-tab-command)))
+
+(define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
+
+(defun cvh/copilot-quit ()
+  "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
+cleared, make sure the overlay doesn't come back too soon."
+  (interactive)
+  (condition-case err
+      (when copilot--overlay
+        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
+          (setq copilot-disable-predicates (list (lambda () t)))
+          (copilot-clear-overlay)
+          (run-with-idle-timer
+           1.0
+           nil
+           (lambda ()
+             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
+    (error handler)))
+
+(advice-add 'keyboard-quit :before #'cvh/copilot-quit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
@@ -99,19 +446,73 @@
 (setq visual-bell t)
 
 ;;  A doom theme
-(use-package doom-themes
-  :init (load-theme 'doom-dracula t))
+;; (use-package doom-themes
+;;   :init (load-theme 'doom-dracula t))
+(load-theme 'modus-vivendi t)
 
-(use-package all-the-icons
-  :if (display-graphic-p)
-  :commands all-the-icons-install-fonts
-  :init
-  (unless (find-font (font-spec :name "all-the-icons"))
-    (all-the-icons-install-fonts t)))
+;; (use-package all-the-icons
+;;   :if (display-graphic-p)
+;;   :commands all-the-icons-install-fonts
+;;   :init
+;;   (unless (find-font (font-spec :name "all-the-icons"))
+;;     (all-the-icons-install-fonts t)))
 
 (use-package all-the-icons-dired
   :if (display-graphic-p)
   :hook (dired-mode . all-the-icons-dired-mode))
+
+<<<<<<< HEAD
+;; Allows some expected functionality
+(require 'dired-x)
+
+;; Disable permanent deletion
+(setq delete-by-moving-to-trash t)
+
+;; Keep dired to one buffer
+(use-package dired-single)
+
+;; Configure dired
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :config
+  (define-key dired-mode-map (kbd "C-<") 'dired-single-up-directory)
+  (define-key dired-mode-map (kbd "C-m") 'dired-single-buffer)
+	   )  
+
+;; Setup dired find file to open using custom program
+(use-package dired-open
+  :config
+  (setq dired-open-extensions '(("pdf" . "zathura")
+				("mkv" . "vlc")
+				("mp4" . "vlc")
+				("avi" . "vlc")
+				("mp3" . "vlc")
+				("jpg" . "feh")
+				("png" . "feh")
+				("jpeg" . "feh")
+				("gif" . "feh")
+				("bmp" . "feh")
+				("tiff" . "feh")
+				("tif" . "feh")
+				("svg" . "feh")
+				("html" . "firefox")
+				("htm" . "firefox")
+				("tex" . "zathura")
+				("texi" . "zathura"))))
+
+;; Toggle visible dotfiles
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
+=======
+(setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
+;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+>>>>>>> 13bd536 (add: wakatime tracking in emacs)
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -119,12 +520,14 @@
       '((emacs-lisp . t)
         (java . t)
         (sass . t)
+	(plantuml . t)
         (matlab . t)
         (C . t)
         (js . t)
         (latex . t)
         (shell . t)
-        (python . t)))
+        (python . t)
+	(rust . t)))
 
   (setq org-confirm-babel-evaluate t)
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
@@ -145,7 +548,7 @@
 (defun cvh/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
                       (expand-file-name user-emacs-directory))
-    Dynamic scoping to the rescue
+    ;; Dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
 
@@ -472,7 +875,7 @@
            (setq doom-modeline-irc t)
            (setq doom-modeline-irc-stylize 'identity)
            (setq doom-modeline-env-version t)
-           (setq doom-modeline-env-python-executable "python") ; or `python-shell-interpreter'
+;;           (setq doom-modeline-env-python-executable "python") ; or `python-shell-interpreter'
            (setq doom-modeline-env-go-executable "go")
            (setq doom-modeline-env-load-string "...")))
 
@@ -542,11 +945,29 @@
   ;;(dap-ui-mode 1)
   :commands dap-debug
   :config
-  ;; Set up Node debugging
+  ;; set up Node debugging
   (require 'dap-node)
   (dap-node-setup)) ;; Automatically installs Node debug adapter if needed
 
+<<<<<<< HEAD
+
+;; Setup the rust LSP
+(use-package rustic
+  :ensure t
+  :custom
+  (rustic-analyzer-command '("rustup" "run" "stable" "rust-analyzer"))
+  )
+(defun cvh/rustic-mode-auto-save-hook ()
+  "Enable auto-saving in rustic-mode buffers."
+  (when buffer-file-name
+    (setq-local compilation-ask-about-save nil)))
+(add-hook 'rustic-mode-hook #'cvh/rustic-mode-auto-save-hook)
+
+;; Disable warnings on cargo test
+(setq rustic-cargo-test-disable-warnings t)
+
 (use-package lsp-python-ms
+  :ensure t
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . lsp)
   :custom
@@ -561,6 +982,28 @@
      ("pyls.plugins.pyls_black.enabled" t t)
      ("pyls.plugins.pyls_isort.enabled" t t)))
   (require 'dap-python))
+=======
+;; (use-package lsp-python-ms
+;;   :ensure t
+;;   :init (setq lsp-python-ms-auto-install-server t)
+;;   :hook (python-mode . lsp)
+;;   )
+;; :custom
+  ;; ;; NOTE: Set these if Python 3 is called "python3" on your system!
+  ;; ;; (python-shell-interpreter "python3")
+  ;; ;; (dap-python-executable "python3")
+  ;; (dap-python-debugger 'debugpy)
+  ;; :config
+  ;; (lsp-register-custom-settings
+  ;;  '(("pyls.plugins.pyls_mypy.enabled" t t)
+  ;;    ("pyls.plugins.pyls_mypy.live_mode" nil t)
+  ;;    ("pyls.plugins.pyls_black.enabled" t t)
+  ;;    ("pyls.plugins.pyls_isort.enabled" t t)))
+;; (require 'dap-python))
+
+(use-package lsp-jedi
+  :ensure t)
+>>>>>>> 13bd536 (add: wakatime tracking in emacs)
     
 (use-package pyvenv
   :after python-mode
@@ -586,28 +1029,31 @@
   :config
   (setq typescript-indent-level 2))
 
+<<<<<<< HEAD
+          
+=======
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
+  ;; :bind (:map company-active-map
+  ;;        ("<tab>" . company-complete-selection))
+  ;;       (:map lsp-mode-map
+  ;;        ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
+>>>>>>> 13bd536 (add: wakatime tracking in emacs)
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
 
+;; Save emacs auto configs to a seperate file then load it.
+(setq custom-file (locate-user-emacs-file "~/.emacs.d/custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
 
-;;(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- ;;)
 
+<<<<<<< HEAD
+=======
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -619,10 +1065,13 @@
  '(nyan-mode t)
  '(nyan-wavy-trail t)
  '(package-selected-packages
-   '(helm-ispell nginx-mode pdf-tools zone-nyan yaml-mode which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets nyan-mode modus-vivendi-theme memoize lsp-ui lsp-latex lsp-jedi lsp-java lsp-ivy ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline counsel-projectile company-box bash-completion auto-package-update all-the-icons-dired)))
+   '(wakatime-mode elpy org-randomnote org-babel-eval-in-repl flycheck-plantuml plantuml-mode babel org-fancy-priorities multiple-cursors exec-path-from-shell latex-extra helm-ispell nginx-mode pdf-tools zone-nyan yaml-mode which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets nyan-mode modus-vivendi-theme memoize lsp-ui lsp-latex lsp-jedi lsp-java lsp-ivy ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline counsel-projectile company-box bash-completion auto-package-update all-the-icons-dired))
+ '(wakatime-api-key "waka_a6b60014-9820-48ac-abcb-d8259f25e687")
+ '(wakatime-cli-path "~/.wakatime/wakatime-cli"))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+>>>>>>> 13bd536 (add: wakatime tracking in emacs)

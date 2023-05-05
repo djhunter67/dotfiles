@@ -14,3 +14,5 @@
 	cm = commit -am
 	rv = remote -v
 	gl = config --global -l
+[init]
+	defaultBranch = trunk
