@@ -16,3 +16,5 @@
 	gl = config --global -l
 [init]
 	defaultBranch = trunk
+[pull]
+	rebase = true
