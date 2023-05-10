@@ -1,4 +1,37 @@
-<<<<<<< HEAD
+;; list the packages you want
+(setq package-list
+      '(better-defaults
+	elpy
+	flycheck
+	py-autopep8
+	blacken
+	material-theme
+	ob-rust
+	editorconfig
+	wakatime-mode
+	lsp-mode
+	use-package
+	multiple-cursors
+	)
+      )
+
+
+(setq package-archives
+             '(("melpa" . "https://melpa.org/packages/")
+               ("org"  .  "https://orgmode.org/elpa/")
+               ("elpa" . "https://elpa.gnu.org/packages/")))
+
+; activate all the packages (in particular autoloads)
+(package-initialize)
+
+; fetch the list of packages available 
+(unless package-archive-contents
+  (package-refresh-contents))
+
+; install the missing packages
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
 
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
@@ -19,6 +52,9 @@
 ;; Don't pop up UI dialogs
 (setq use-dialog-box nil)
 
+;; Disable init popup
+(setq inhibit-startup-message t)
+
 ;; Revert buffers when underlying file has changed
 (global-auto-revert-mode 1)
 
@@ -31,34 +67,13 @@
 
 (require 'package)
 
-(setq package-archives
-             '(("melpa" . "https://melpa.org/packages/")
-               ("org"  .  "https://orgmode.org/elpa/")
-               ("elpa" . "https://elpa.gnu.org/packages/")))
-
-
-=======
-(defvar myPackages
-  '(better-defaults
-    elpy
-    flycheck
-    py-autopep8
-    blacken
-    material-theme
-    )
-  )
-
-;; ====================================
-;; Development Setup
-;; ====================================
-
-;; Enable elpy
-(elpy-enable)
+;; Setup
+;;====================================
 
 ;; Enable flycheck
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+   (add-hook 'elpy-mode-hook 'flycheck-mode))
 
 
 ;; Enable the Melpa repo
@@ -67,20 +82,16 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
 ;; and `package-pinned-packages`. Most users will not need or want to do this.
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
->>>>>>> 13bd536 (add: wakatime tracking in emacs)
-(package-initialize)
-
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 ;; Enable wakatime
 (global-wakatime-mode)
-
 
 ;; Enable autopep8
 ;; (require 'py-autopep8)
 ;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 
-(defun rk/rustic-mode-hook ()
+(defun cvh/rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
   ;; save rust buffers that are not file visiting. Once
   ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
@@ -115,13 +126,13 @@
   :ensure
   :custom
   (company-idle-delay 0.5) ;; how long to wait until popup
-  ;; (company-begin-commands nil) ;; uncomment to disable popup
-  ;;:bind
-  ;;(:map company-active-map
-	      ;;("C-n". company-select-next)
-	      ;;("C-p". company-select-previous)
-	      ;;("M-<". company-select-first)
-	      ;;("M->". company-select-last)))
+  (company-begin-commands nil) ;; uncomment to disable popup
+  :bind
+  (:map company-active-map
+	      ("C-n". company-select-next)
+	      ("C-p". company-select-previous)
+	      ("M-<". company-select-first)
+	      ("M->". company-select-last)))
 
 (use-package yasnippet
   :ensure
@@ -131,9 +142,7 @@
   (add-hook 'text-mode-hook 'yas-minor-mode))
 
 
-  (:map company-mode-map
-      ("<tab>". tab-indent-or-complete)
-      ("TAB". tab-indent-or-complete)))
+
 
 (defun company-yasnippet-or-completion ()
   (interactive)
@@ -202,8 +211,8 @@
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
 
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+;; ;; (when (memq window-system '(mac ns x))
+;;   ;; (exec-path-from-shell-initialize))
 
 ;; Set the variable pitch face
 ;;(set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
@@ -244,11 +253,11 @@
   (elpy-enable))
 
 
-;; Get autopep8
+;; Get autopep8p
 (use-package py-autopep8
   :ensure t
   )
-					;
+ 					;
 ;; Get Copilot
 (require 'cl)
 (let ((pkg-list '(use-package
@@ -267,7 +276,7 @@
   ;; don't show in mode line
   :diminish)
   
-(setq inhibit-startup-message t)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define custom keybinding ;;
@@ -381,9 +390,9 @@ is available. Useful if you tend to hammer your keys like I do."
 available. Otherwise will try company, yasnippet or normal
 tab-indent."
   (interactive)
-  (or (copilot-accept-completion)
-      ;; (company-yasnippet-or-completion)
-      (indent-for-tab-command)))
+  (or   
+   (company-complete)
+   (indent-for-tab-command)))
 
 (define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
 
@@ -461,7 +470,7 @@ cleared, make sure the overlay doesn't come back too soon."
   :if (display-graphic-p)
   :hook (dired-mode . all-the-icons-dired-mode))
 
-<<<<<<< HEAD
+
 ;; Allows some expected functionality
 (require 'dired-x)
 
@@ -508,11 +517,11 @@ cleared, make sure the overlay doesn't come back too soon."
   :hook (dired-mode . dired-hide-dotfiles-mode)
   :config
   (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
-=======
+
 (setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
->>>>>>> 13bd536 (add: wakatime tracking in emacs)
+
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -949,7 +958,7 @@ cleared, make sure the overlay doesn't come back too soon."
   (require 'dap-node)
   (dap-node-setup)) ;; Automatically installs Node debug adapter if needed
 
-<<<<<<< HEAD
+
 
 ;; Setup the rust LSP
 (use-package rustic
@@ -982,28 +991,10 @@ cleared, make sure the overlay doesn't come back too soon."
      ("pyls.plugins.pyls_black.enabled" t t)
      ("pyls.plugins.pyls_isort.enabled" t t)))
   (require 'dap-python))
-=======
-;; (use-package lsp-python-ms
-;;   :ensure t
-;;   :init (setq lsp-python-ms-auto-install-server t)
-;;   :hook (python-mode . lsp)
-;;   )
-;; :custom
-  ;; ;; NOTE: Set these if Python 3 is called "python3" on your system!
-  ;; ;; (python-shell-interpreter "python3")
-  ;; ;; (dap-python-executable "python3")
-  ;; (dap-python-debugger 'debugpy)
-  ;; :config
-  ;; (lsp-register-custom-settings
-  ;;  '(("pyls.plugins.pyls_mypy.enabled" t t)
-  ;;    ("pyls.plugins.pyls_mypy.live_mode" nil t)
-  ;;    ("pyls.plugins.pyls_black.enabled" t t)
-  ;;    ("pyls.plugins.pyls_isort.enabled" t t)))
-;; (require 'dap-python))
 
 (use-package lsp-jedi
   :ensure t)
->>>>>>> 13bd536 (add: wakatime tracking in emacs)
+
     
 (use-package pyvenv
   :after python-mode
@@ -1029,9 +1020,6 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (setq typescript-indent-level 2))
 
-<<<<<<< HEAD
-          
-=======
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
@@ -1042,7 +1030,7 @@ cleared, make sure the overlay doesn't come back too soon."
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
->>>>>>> 13bd536 (add: wakatime tracking in emacs)
+
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
@@ -1052,26 +1040,20 @@ cleared, make sure the overlay doesn't come back too soon."
 (load custom-file 'noerror 'nomessage)
 
 
-<<<<<<< HEAD
-=======
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(global-hl-line-mode t)
  '(nyan-animate-nyancat t)
  '(nyan-cat-face-number 1)
  '(nyan-mode t)
  '(nyan-wavy-trail t)
  '(package-selected-packages
-   '(wakatime-mode elpy org-randomnote org-babel-eval-in-repl flycheck-plantuml plantuml-mode babel org-fancy-priorities multiple-cursors exec-path-from-shell latex-extra helm-ispell nginx-mode pdf-tools zone-nyan yaml-mode which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets nyan-mode modus-vivendi-theme memoize lsp-ui lsp-latex lsp-jedi lsp-java lsp-ivy ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline counsel-projectile company-box bash-completion auto-package-update all-the-icons-dired))
- '(wakatime-api-key "waka_a6b60014-9820-48ac-abcb-d8259f25e687")
- '(wakatime-cli-path "~/.wakatime/wakatime-cli"))
+   '(multiple-cursors wakatime-mode use-package py-autopep8 ob-rust material-theme lsp-ui flycheck elpy editorconfig blacken better-defaults)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
->>>>>>> 13bd536 (add: wakatime tracking in emacs)
