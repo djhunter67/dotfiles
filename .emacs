@@ -69,6 +69,7 @@
 (defvar cvh/default-variable-font-size 120)
 
 (require 'package)
+
 ;;====================================
 ;; Setup
 ;;====================================
@@ -228,6 +229,11 @@
 
 ;; Comment the line
 (global-set-key (kbd "C-;") 'comment-line)
+
+;; Peek definition in python mode; hook python mode
+(add-hook 'python-mode-hook
+	  (lambda ()
+	    (define-key python-mode-map (kbd "C-'") 'lsp-ui-peek-find-definitions)))
 
 ;; Set selected indent left
 (global-set-key (kbd "C-{") 'indent-rigidly-left-to-tab-stop)
