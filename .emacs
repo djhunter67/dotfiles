@@ -74,47 +74,26 @@
 	lsp-mode
 	use-package
 	multiple-cursors
-	ivy-yasnippet
-	company
-	prettier-js
-	flymake-ruff
-	ivy-posframe
-	origami
-	lsp-origami
-	tree-sitter-langs
-	wakatime-mode
-	lsp-mode
-	use-package
-	multiple-cursors
-	counsel
-	yasnippet
-	ivy-rich
-	ivy-yasnippet
-	ivy-prescient
-	company
-	company-box
-	ivy-posframe
-	lsp-origami
-	nyan-mode
-	dired-open
-	auto-package-update
-	rainbow-delimiters
-	all-the-icons-dired
-	which-key
-	projectile
-	projectile-ripgrep
-	all-the-icons
-	all-the-icons-dired
-	doom-modeline
-	doom-themes
-	rust-mode
-	syntactic-close
-	drag-stuff
-	rjsx-mode
+	sqlite3
+	dired-gitignore
+	yaml-mode
 	)
       )
 
-;; install the missing packages
+
+(setq package-archives
+      '(("melpa" . "https://melpa.org/packages/")
+	("org"  .  "https://orgmode.org/elpa/")
+	("elpa" . "https://elpa.gnu.org/packages/")))
+
+					; activate all the packages (in particular autoloads)
+(package-initialize)
+
+					; fetch the list of packages available 
+(unless package-archive-contents
+  (package-refresh-contents))
+
+					; install the missing packages
 (dolist (package package-list)
   (unless (package-installed-p package)
     (package-install package)))
@@ -141,13 +120,224 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-(eval-when-compile
-  (require 'use-package))
+;; Append to emacs PATH
+(setq user-emacs-directory "~/.emacs.d")
 
-(use-package copilot
-  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :ensure t)
-;; you can utilize :map :hook and :config to customize copilot
+;; Don't pop up UI dialogs
+(setq use-dialog-box nil)
+
+;; Disable init popup
+(setq inhibit-startup-message t)
+
+;; Revert buffers when underlying file has changed
+(global-auto-revert-mode 1)
+
+;; Revert Dired buffer to live reload
+(setq global-auto-revert-non-file-buffers t)
+
+;; You will most likely need to adjust this font size for your system!
+(defvar cvh/default-font-size 120)
+(defvar cvh/default-variable-font-size 120)
+
+(require 'package)
+;;====================================
+;; Setup
+;;====================================
+
+;; Get and enable Elpy
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
+
+;; Enable flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+;; Enable yaml mode for .yaml files and .yml files
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
+
+;; Enable the Melpa repo
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
+;; Enable wakatime
+(global-wakatime-mode)
+
+;; Enable autopep8
+;; (require 'py-autopep8)
+;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+
+(defun cvh/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+;; Rust IDE feature
+(use-package lsp-mode
+  :ensure
+  :commands lsp
+  :custom
+  ;; what to use when checking on-save. "check" is default, I prefer clippy
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.3)
+  ;; enable / disable the hints as you prefer:
+  (lsp-rust-analyzer-server-display-inlay-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+  (lsp-rust-analyzer-display-chaining-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+  (lsp-rust-analyzer-display-closure-return-type-hints t)
+  (lsp-rust-analyzer-display-parameter-hints t)
+  (lsp-rust-analyzer-display-reborrow-hints t)
+  :config
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+;; Company mode for Rust
+(use-package flycheck :ensure)
+(use-package company
+  :ensure
+  :custom
+  (company-idle-delay 0.3) ;; how long to wait until popup
+  (company-begin-commands nil) ;; uncomment to disable popup
+  :bind
+  (:map company-active-map
+	("C-n". company-select-next)
+	("C-p". company-select-previous)
+	("M-<". company-select-first)
+	("M->". company-select-last)))
+
+(use-package yasnippet
+  :ensure
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'text-mode-hook 'yas-minor-mode))
+
+(defun company-yasnippet-or-completion ()
+  (interactive)
+  (or (do-yas-expand)
+      (company-complete-common)))
+
+(defun check-expansion ()
+  (save-excursion
+    (if (looking-at "\\_>") t
+      (backward-char 1)
+      (if (looking-at "\\.") t
+	(backward-char 1)
+	(if (looking-at "::") t nil)))))
+
+(defun do-yas-expand ()
+  (let ((yas/fallback-behavior 'return-nil))
+    (yas/expand)))
+
+(defun tab-indent-or-complete ()
+  (interactive)
+  (if (minibufferp)
+      (minibuffer-complete)
+    (if (or (not yas/minor-mode)
+	    (null (do-yas-expand)))
+	(if (check-expansion)
+	    (company-complete-common)
+	  (indent-for-tab-command)))))
+
+;; inline inferred types
+(setq lsp-rust-analyzer-server-display-inlay-hints t)
+
+(use-package lsp-ui
+  :ensure
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable nil))
+
+
+
+(require 'multiple-cursors)
+
+(add-to-list 'load-path "~/dotfiles/copilot.el/")
+(require 'copilot)
+
+
+;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (use-package fira-code-mode								  ;;
+;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
+;; :hook prog-mode)  								  ;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(set-face-attribute 'default nil :font "Fira Code Retina" :height cvh/default-font-size)
+
+;; Set the fixed pitch face
+(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
+
+
+;;=======================================
+;; CUSTOM BINDINGS
+;;=======================================
+
+;; Comment the line
+(global-set-key (kbd "C-;") 'comment-line)
+
+;; Set selected indent left
+(global-set-key (kbd "C-{") 'indent-rigidly-left-to-tab-stop)
+
+;; Set selected indent right
+(global-set-key (kbd "C-}") 'indent-rigidly-right-to-tab-stop)
+
+;; Switch buffers fast
+(global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
+(global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
+
+;; Multiple Cursors
+(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
+
+;; Delete line from cursor to beginning
+(global-set-key (kbd "S-<delete>") 'kill-whole-line)
+
+;; Immediately kill the focused buffer
+(global-unset-key (kbd "C-x k"))
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+;; Python mode --> autoformat tabs and comments
+(defun my-format-python-text ()
+  "untabify and wrap python comments"
+  (interactive)
+  (untabify (point-min) (point-max))
+  (goto-char (point-min))
+  (while (re-search-forward comment-start nil t)
+    (call-interactively 'fill-paragraph)
+    (forward-line 1)))
+
+(eval-after-load "python"
+  '(progn
+     (define-key python-mode-map (kbd "RET") 'newline-and-indent)
+     (define-key python-mode-map (kbd "<f4>") 'my-format-python-text)))
+
+;; Autopep8 execute
+(setq py-autopep8-options '("--max-line-length=100"))
+(define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer)
 
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
@@ -155,17 +345,17 @@
   (copilot-mode -1))
 
 (defvar cvh/no-copilot-modes '(shell-mode
-			       inferior-python-mode
-                               eshell-mode
-                               term-mode
-                               vterm-mode
-                               comint-mode
-                               compilation-mode
-                               debugger-mode
-                               dired-mode-hook
-                               compilation-mode-hook
-                               flutter-mode-hook
-                               minibuffer-mode-hook)
+			      inferior-python-mode
+                              eshell-mode
+                              term-mode
+                              vterm-mode
+                              comint-mode
+                              compilation-mode
+                              debugger-mode
+                              dired-mode-hook
+                              compilation-mode-hook
+                              flutter-mode-hook
+                              minibuffer-mode-hook)
   "Modes in which copilot is inconvenient.")
 
 (defun cvh/copilot-disable-predicate ()
@@ -857,6 +1047,10 @@ there's a region, all lines that region covers will be duplicated."
   :if (display-graphic-p)
   :hook (dired-mode . all-the-icons-dired-mode))
 
+;; Respect the gitignore
+(use-package dired-gitignore
+  :hook (dired-mode . dired-gitignore-mode))
+
 ;; Allows some expected functionality
 (require 'dired-x)
 
@@ -900,12 +1094,11 @@ there's a region, all lines that region covers will be duplicated."
 				("texi" . "zathura"))))
 
 ;; Toggle visible dotfiles
-;; (use-package dired-hide-dotfiles
-;; :hook (dired-mode . dired-hide-dotfiles-mode)
-;; :config
-;; (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
-
-(setq org-plantuml-jar-path (expand-file-name "/home/$USER/.BUILDS/plantuml-1.2023.5.jar"))
+(use-package dired-hide-dotfiles
+  ;;:hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (define-key dired-mode-map (kbd "C-b") 'dired-hide-dotfiles-mode))
+(setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 
