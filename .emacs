@@ -12,23 +12,26 @@
 	lsp-mode
 	use-package
 	multiple-cursors
+	sqlite3
+	dired-gitignore
+	yaml-mode
 	)
       )
 
 
 (setq package-archives
-             '(("melpa" . "https://melpa.org/packages/")
-               ("org"  .  "https://orgmode.org/elpa/")
-               ("elpa" . "https://elpa.gnu.org/packages/")))
+      '(("melpa" . "https://melpa.org/packages/")
+	("org"  .  "https://orgmode.org/elpa/")
+	("elpa" . "https://elpa.gnu.org/packages/")))
 
-; activate all the packages (in particular autoloads)
+					; activate all the packages (in particular autoloads)
 (package-initialize)
 
-; fetch the list of packages available 
+					; fetch the list of packages available 
 (unless package-archive-contents
   (package-refresh-contents))
 
-; install the missing packages
+					; install the missing packages
 (dolist (package package-list)
   (unless (package-installed-p package)
     (package-install package)))
@@ -66,15 +69,25 @@
 (defvar cvh/default-variable-font-size 120)
 
 (require 'package)
-
+;;====================================
 ;; Setup
 ;;====================================
+
+;; Get and enable Elpy
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
 
 ;; Enable flycheck
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-   (add-hook 'elpy-mode-hook 'flycheck-mode))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
 
+;; Enable yaml mode for .yaml files and .yml files
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
 
 ;; Enable the Melpa repo
 
@@ -108,15 +121,15 @@
   ;; what to use when checking on-save. "check" is default, I prefer clippy
   (lsp-rust-analyzer-cargo-watch-command "clippy")
   (lsp-eldoc-render-all t)
-  (lsp-idle-delay 0.6)
+  (lsp-idle-delay 0.3)
   ;; enable / disable the hints as you prefer:
   (lsp-rust-analyzer-server-display-inlay-hints t)
   (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
   (lsp-rust-analyzer-display-chaining-hints t)
   (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
   (lsp-rust-analyzer-display-closure-return-type-hints t)
-  (lsp-rust-analyzer-display-parameter-hints nil)
-  (lsp-rust-analyzer-display-reborrow-hints nil)
+  (lsp-rust-analyzer-display-parameter-hints t)
+  (lsp-rust-analyzer-display-reborrow-hints t)
   :config
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
@@ -125,14 +138,14 @@
 (use-package company
   :ensure
   :custom
-  (company-idle-delay 0.5) ;; how long to wait until popup
+  (company-idle-delay 0.3) ;; how long to wait until popup
   (company-begin-commands nil) ;; uncomment to disable popup
   :bind
   (:map company-active-map
-	      ("C-n". company-select-next)
-	      ("C-p". company-select-previous)
-	      ("M-<". company-select-first)
-	      ("M->". company-select-last)))
+	("C-n". company-select-next)
+	("C-p". company-select-previous)
+	("M-<". company-select-first)
+	("M->". company-select-last)))
 
 (use-package yasnippet
   :ensure
@@ -140,9 +153,6 @@
   (yas-reload-all)
   (add-hook 'prog-mode-hook 'yas-minor-mode)
   (add-hook 'text-mode-hook 'yas-minor-mode))
-
-
-
 
 (defun company-yasnippet-or-completion ()
   (interactive)
@@ -154,8 +164,8 @@
     (if (looking-at "\\_>") t
       (backward-char 1)
       (if (looking-at "\\.") t
-        (backward-char 1)
-        (if (looking-at "::") t nil)))))
+	(backward-char 1)
+	(if (looking-at "::") t nil)))))
 
 (defun do-yas-expand ()
   (let ((yas/fallback-behavior 'return-nil))
@@ -166,10 +176,10 @@
   (if (minibufferp)
       (minibuffer-complete)
     (if (or (not yas/minor-mode)
-            (null (do-yas-expand)))
-        (if (check-expansion)
-            (company-complete-common)
-          (indent-for-tab-command)))))
+	    (null (do-yas-expand)))
+	(if (check-expansion)
+	    (company-complete-common)
+	  (indent-for-tab-command)))))
 
 ;; inline inferred types
 (setq lsp-rust-analyzer-server-display-inlay-hints t)
@@ -183,27 +193,27 @@
   (lsp-ui-doc-enable nil))
 
 
- 
+
 (require 'multiple-cursors)
 
-(add-to-list 'load-path "~/.emacs.d/copilot.el")
+(add-to-list 'load-path "~/dotfiles/copilot.el/")
 (require 'copilot)
 
 
 ;; Initialize use-package on non-Linux platforms
- (unless (package-installed-p 'use-package)
-   (package-install 'use-package))
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
 
- (require 'use-package)
- (setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure t)
 
- (set-language-environment "UTF-8")
- (set-default-coding-systems 'utf-8)
- 
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (use-package fira-code-mode								  ;;
-  ;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
-  ;; :hook prog-mode)  								  ;;
+;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
+;; :hook prog-mode)  								  ;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (set-face-attribute 'default nil :font "Fira Code Retina" :height cvh/default-font-size)
@@ -211,79 +221,19 @@
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
 
-;; ;; (when (memq window-system '(mac ns x))
-;;   ;; (exec-path-from-shell-initialize))
 
-;; Set the variable pitch face
-;;(set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
+;;=======================================
+;; CUSTOM BINDINGS
+;;=======================================
 
-(use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
-
-(use-package auto-package-update
-  :custom
-  (auto-package-update-interval 7)
-  (auto-package-update-prompt-before-update t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe)
-  (auto-package-update-at-time "09:00"))
-
-;; Enable Nyan Cat scrolling
-(use-package nyan-mode
-  :config
-  (custom-set-variables
-   '(nyan-cat-face-number 1)
-   '(nyan-wavy-trail t)
-   '(nyan-animate-nyancat t)
-   '(nyan-mode t)))
-
-;; Get and enable Elpy
-(use-package elpy
-  :ensure t
-  :init
-  (elpy-enable))
-
-
-;; Get autopep8p
-(use-package py-autopep8
-  :ensure t
-  )
- 					;
-;; Get Copilot
-(require 'cl)
-(let ((pkg-list '(use-package
-		          s
-		          dash
-		          editorconfig
-                  company)))
-  ;; (package-initialize)
-  (when-let ((to-install (map-filter (lambda (pkg _) (not (package-installed-p pkg))) pkg-list)))
-    (package-refresh-contents)
-    (mapc (lambda (pkg) (package-install pkg)) pkg-list)))
-
-
-(use-package copilot
-  :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
-  ;; don't show in mode line
-  :diminish)
-  
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Define custom keybinding ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Set C+; to comment entire line
+;; Comment the line
 (global-set-key (kbd "C-;") 'comment-line)
+
+;; Set selected indent left
+(global-set-key (kbd "C-{") 'indent-rigidly-left-to-tab-stop)
+
+;; Set selected indent right
+(global-set-key (kbd "C-}") 'indent-rigidly-right-to-tab-stop)
 
 ;; Switch buffers fast
 (global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
@@ -324,7 +274,7 @@
   (copilot-mode -1))
 
 (defvar cvh/no-copilot-modes '(shell-mode
-                              inferior-python-mode
+			      inferior-python-mode
                               eshell-mode
                               term-mode
                               vterm-mode
@@ -382,8 +332,8 @@ is available. Useful if you tend to hammer your keys like I do."
 (define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
 (define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion)
 (define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "M-C-<down>") #'copilot-accept-completion-by-line)
-(define-key global-map (kbd "M-C-<return>") #'cvh/copilot-complete-or-accept)
+(define-key copilot-mode-map (kbd "M-C-=") #'copilot-accept-completion-by-line)
+(define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)
 
 (defun cvh/copilot-tab ()
   "Tab command that will complet with copilot if a completion is
@@ -394,7 +344,7 @@ tab-indent."
    (company-complete)
    (indent-for-tab-command)))
 
-(define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
+;; (define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
 
 (defun cvh/copilot-quit ()
   "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
@@ -470,6 +420,9 @@ cleared, make sure the overlay doesn't come back too soon."
   :if (display-graphic-p)
   :hook (dired-mode . all-the-icons-dired-mode))
 
+;; Respect the gitignore
+(use-package dired-gitignore
+  :hook (dired-mode . dired-gitignore-mode))
 
 ;; Allows some expected functionality
 (require 'dired-x)
@@ -514,10 +467,9 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Toggle visible dotfiles
 (use-package dired-hide-dotfiles
-  :hook (dired-mode . dired-hide-dotfiles-mode)
+  ;;:hook (dired-mode . dired-hide-dotfiles-mode)
   :config
-  (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
-
+  (define-key dired-mode-map (kbd "C-b") 'dired-hide-dotfiles-mode))
 (setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
