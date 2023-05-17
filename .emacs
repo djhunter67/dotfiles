@@ -62,13 +62,20 @@
 (setq global-auto-revert-non-file-buffers t)
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar cvh/default-font-size 120)
-(defvar cvh/default-variable-font-size 120)
+(defvar cvh/default-font-size 110)
+(defvar cvh/default-variable-font-size 110)
 
 (require 'package)
 
 ;; Setup
 ;;====================================
+
+;; Get and enable Elpy
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
+
 
 ;; Enable flycheck
 (when (require 'flycheck nil t)
@@ -246,11 +253,6 @@
    '(nyan-animate-nyancat t)
    '(nyan-mode t)))
 
-;; Get and enable Elpy
-(use-package elpy
-  :ensure t
-  :init
-  (elpy-enable))
 
 
 ;; Get autopep8p
