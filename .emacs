@@ -1,3 +1,8 @@
+;; -*- lexical-binding: t; -*-
+
+;; The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
+
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
 	  (lambda ()
@@ -11,6 +16,13 @@
              '(("melpa" . "https://melpa.org/packages/")
                ("org"  .  "https://orgmode.org/elpa/")
                ("elpa" . "https://elpa.gnu.org/packages/")))
+
+;; Initialize use-package on non-Linux platforms
+ (unless (package-installed-p 'use-package)
+   (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
 
 ; activate all the packages (in particular autoloads)
 (package-initialize)
@@ -96,20 +108,12 @@
    (add-hook 'elpy-mode-hook 'flycheck-mode))
 
 
-;; Enable the Melpa repo
-
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-
 ;; Enable wakatime
 (global-wakatime-mode)
 
 ;; Enable autopep8
 ;; (require 'py-autopep8)
-;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+
 
 (defun cvh/rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
@@ -146,7 +150,7 @@
   :ensure
   :custom
   (company-idle-delay 1) ;; how long to wait until popup, was 0.5
-  (company-begin-commands t) ;; uncomment to disable popup
+  (company-begin-commands t) ;; display popup immediatly in following cmds
   :bind
   (:map company-active-map
 	      ("C-n". company-select-next)
@@ -160,9 +164,6 @@
   (yas-reload-all)
   (add-hook 'prog-mode-hook 'yas-minor-mode)
   (add-hook 'text-mode-hook 'yas-minor-mode))
-
-
-
 
 (defun company-yasnippet-or-completion ()
   (interactive)
@@ -194,27 +195,7 @@
 ;; inline inferred types
 (setq lsp-rust-analyzer-server-display-inlay-hints t)
 
-(use-package lsp-ui
-  :ensure
-  :commands lsp-ui-mode
-  :custom
-  (lsp-ui-peek-always-show t)
-  (lsp-ui-sideline-show-hover t)
-  (lsp-ui-doc-enable nil))
-
-
- 
 (require 'multiple-cursors)
-
-
-
-
-;; Initialize use-package on non-Linux platforms
- (unless (package-installed-p 'use-package)
-   (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t)
 
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
@@ -231,11 +212,8 @@
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
 
-;; ;; (when (memq window-system '(mac ns x))
-;;   ;; (exec-path-from-shell-initialize))
-
 ;; Set the variable pitch face
-;;(set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
 
 (use-package company
   :after lsp-mode
@@ -339,6 +317,7 @@
 ;; Autopep8 execute
 (setq py-autopep8-options '("--max-line-length=100"))
 (define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer)
+(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
@@ -473,9 +452,9 @@ cleared, make sure the overlay doesn't come back too soon."
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;;  A doom theme
-;; (use-package doom-themes
-;;   :init (load-theme 'doom-dracula t))
-(load-theme 'modus-vivendi t)
+(use-package doom-themes
+  :init (load-theme 'doom-dark+ t))
+;; (load-theme 'modus-vivendi t)
 
 ;; (use-package all-the-icons
 ;;   :if (display-graphic-p)
@@ -487,7 +466,6 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package all-the-icons-dired
   :if (display-graphic-p)
   :hook (dired-mode . all-the-icons-dired-mode))
-
 
 ;; Allows some expected functionality
 (require 'dired-x)
@@ -539,7 +517,6 @@ cleared, make sure the overlay doesn't come back too soon."
 (setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
-
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -755,16 +732,16 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package magit
   :commands magit-status)
   ;;:custom
-  ;;(magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+;;(magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
 (use-package forge
   :after magit)
 
 (use-package term
   :commands term
   :config
-  (setq explicit-shell-file-name "bash") ;; Change this to zsh, etc
-  ;;(setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
-
+  ;; (setq explicit-shell-file-name "bash") ;; Change this to zsh, etc
+  (setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
   ;; Match the default Bash shell prompt.  Update this if you have a custom prompt
   (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 
@@ -777,10 +754,6 @@ cleared, make sure the overlay doesn't come back too soon."
   (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")  ;; Set this to match your custom shell prompt
   ;;(setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
   (setq vterm-max-scrollback 10000))
-
-(when (eq system-type 'windows-nt)
-  (setq explicit-shell-file-name "powershell.exe")
-  (setq explicit-powershell.exe-args '()))
 
 (defun cvh/configure-eshell ()
   ;; Save command history when commands are entered
@@ -804,6 +777,7 @@ cleared, make sure the overlay doesn't come back too soon."
   (eshell-git-prompt-use-theme 'powerline))
 
 (use-package helpful
+  :ensure t  ;; Redundant
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -814,24 +788,24 @@ cleared, make sure the overlay doesn't come back too soon."
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/Documents/code")
-    (setq projectile-project-search-path '("~/Documents/code")))
-  (setq projectile-switch-project-action #'projectile-dired))
+;; (use-package projectile
+;;   :diminish projectile-mode
+;;   :config (projectile-mode)
+;;   :custom ((projectile-completion-system 'ivy))
+;;   :bind-keymap
+;;   ("C-c p" . projectile-command-map)
+;;   :init
+;;   ;; NOTE: Set this to the folder where you keep your Git repos!
+;;   (when (file-directory-p "~/Documents/code")
+;;     (setq projectile-project-search-path '("~/Documents/code")))
+;;   (setq projectile-switch-project-action #'projectile-dired))
 
-(use-package counsel-projectile
-  :after projectile
-  :config (counsel-projectile-mode))
+;; (use-package counsel-projectile
+  ;; :after projectile
+  ;; :config (counsel-projectile-mode))
 
 (use-package which-key
-  :defer 0
+  :init (which-key-mode)
   :diminish which-key-mode
   :config
   (which-key-mode)
@@ -850,12 +824,12 @@ cleared, make sure the overlay doesn't come back too soon."
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
          ("C-p" . ivy-previous-line)
-         ("C-r" . ivy-reverse-i-search-kill))
+         ;; ("C-r" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
 (use-package ivy-rich
-  :after ivy
+  ;; :after ivy
   :init
   (ivy-rich-mode 1))
 
@@ -868,6 +842,7 @@ cleared, make sure the overlay doesn't come back too soon."
   :custom
   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
   :config
+  ;; (setq ivy-initial-inputs-alist nil) ;; Don't start searches with ^
   (counsel-mode 1))
 
 (use-package ivy-prescient
@@ -905,16 +880,16 @@ cleared, make sure the overlay doesn't come back too soon."
            (setq doom-modeline-env-go-executable "go")
            (setq doom-modeline-env-load-string "...")))
 
-(use-package general
-  :config
-  (general-create-definer cvh/leader-keys
-    :keymaps '(normal insert visual emacs)
-    :prefix "m"
-    :global-prefix "M-m")
+;; (use-package general
+  ;; :config
+  ;; (general-create-definer cvh/leader-keys
+    ;; :keymaps '(normal insert visual emacs)
+    ;; :prefix "m"
+    ;; :global-prefix "M-m")
 
-  (cvh/leader-keys
-    "t" '(:ignore t :which-key "choose theme")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+  ;; (cvh/leader-keys
+    ;; "t" '(:ignore t :which-key "choose theme")
+    ;; "tt" '(counsel-load-theme :which-key "choose theme")))
 
 ;; Make parenthesie life easier
 (use-package rainbow-delimiters
@@ -923,14 +898,6 @@ cleared, make sure the overlay doesn't come back too soon."
 (defun cvh/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode))
-
-;; (use-package lsp-mode
-;;   :commands (lsp lsp-deferred)
-;;   :hook (lsp-mode . cvh/lsp-mode-setup)
-;;   :init
-;;   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-;;   :config
-;;   (lsp-enable-which-key-integration t))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
@@ -942,7 +909,11 @@ cleared, make sure the overlay doesn't come back too soon."
                 lsp-ui-doc-alignment 'frame
                 lsp-ui-doc-header nil
                 lsp-ui-doc-include-signature t
-                lsp-ui-doc-use-childframe t))
+                lsp-ui-doc-use-childframe t)
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable nil))
   
 (use-package lsp-treemacs
   :after lsp)
@@ -953,7 +924,7 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package dap-mode
   ;; Uncomment the config below if you want all UI panes to be hidden by default!
   :custom
-  (lsp-enable-dap-auto-configure nil)
+  (lsp-enable-dap-auto-configure t)
   ;;:config
   
   :commands dap-debug
@@ -997,7 +968,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package lsp-jedi
   :ensure t)
-
     
 (use-package pyvenv
   :after python-mode
@@ -1022,7 +992,6 @@ cleared, make sure the overlay doesn't come back too soon."
   :hook (typescript-mode . lsp-deferred)
   :config
   (setq typescript-indent-level 2))
-
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
