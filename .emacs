@@ -77,6 +77,7 @@
 	sqlite3
 	dired-gitignore
 	yaml-mode
+	imenu-list
 	)
       )
 
@@ -176,15 +177,6 @@
 ;; (require 'py-autopep8)
 ;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 
-(defun cvh/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
-  (when buffer-file-name
-    (setq-local buffer-save-without-query t))
-  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
-
 ;; Rust IDE feature
 (use-package lsp-mode
   :ensure
@@ -211,7 +203,7 @@
   :ensure
   :custom
   (company-idle-delay 0.3) ;; how long to wait until popup
-  (company-begin-commands nil) ;; uncomment to disable popup
+  ;; (company-begin-commands nil) ;; uncomment to disable popup
   :bind
   (:map company-active-map
 	("C-n". company-select-next)
@@ -297,6 +289,10 @@
 ;;=======================================
 ;; CUSTOM BINDINGS
 ;;=======================================
+
+;; Imenu-list bindings
+(global-set-key (kbd "C-,") #'imenu-list-smart-toggle)
+(setq imenu-list-focus-after-activation t)
 
 ;; Comment the line
 (global-set-key (kbd "C-;") 'comment-line)
@@ -1546,6 +1542,27 @@ there's a region, all lines that region covers will be duplicated."
   :commands (lsp-ivy-workspace-symbol)
   :after lsp)
 
+(use-package dap-mode
+  ;; Uncomment the config below if you want all UI panes to be hidden by default!
+  ;;:custom
+  ;;(lsp-enable-dap-auto-configure nil)
+  ;;:config
+  ;;(dap-ui-mode 1)
+  :commands dap-debug
+  :config
+  ;; set up Node debugging
+  (require 'dap-node)
+  (dap-node-setup)) ;; Automatically installs Node debug adapter if needed
+
+
+
+;; Setup the rust LSP
+(use-package rustic
+  :ensure t
+  :custom
+  (rustic-analyzer-command '("rustup" "run" "stable" "rust-analyzer"))
+  )
+
 (defun cvh/rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
   ;; save rust buffers that are not file visiting. Once
@@ -1556,6 +1573,13 @@ there's a region, all lines that region covers will be duplicated."
   (add-hook 'before-save-hook 'lsp-format-buffer nil t))
 
 
+(defun cvh/rustic-mode-auto-save-hook ()
+  "Enable auto-saving in rustic-mode buffers."
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+  
 ;; Disable warnings on cargo test
 (setq rustic-cargo-test-disable-warnings t)
 
@@ -1664,6 +1688,18 @@ there's a region, all lines that region covers will be duplicated."
   :hook (typescript-mode . lsp-deferred)
   :config
   (setq typescript-indent-level 2))
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
