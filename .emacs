@@ -15,6 +15,7 @@
 	sqlite3
 	dired-gitignore
 	yaml-mode
+	imenu-list
 	)
       )
 
@@ -105,15 +106,6 @@
 ;; (require 'py-autopep8)
 ;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 
-(defun cvh/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
-  (when buffer-file-name
-    (setq-local buffer-save-without-query t))
-  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
-
 ;; Rust IDE feature
 (use-package lsp-mode
   :ensure
@@ -140,7 +132,7 @@
   :ensure
   :custom
   (company-idle-delay 0.3) ;; how long to wait until popup
-  (company-begin-commands nil) ;; uncomment to disable popup
+  ;; (company-begin-commands nil) ;; uncomment to disable popup
   :bind
   (:map company-active-map
 	("C-n". company-select-next)
@@ -226,6 +218,10 @@
 ;;=======================================
 ;; CUSTOM BINDINGS
 ;;=======================================
+
+;; Imenu-list bindings
+(global-set-key (kbd "C-,") #'imenu-list-smart-toggle)
+(setq imenu-list-focus-after-activation t)
 
 ;; Comment the line
 (global-set-key (kbd "C-;") 'comment-line)
@@ -924,6 +920,17 @@ cleared, make sure the overlay doesn't come back too soon."
   :custom
   (rustic-analyzer-command '("rustup" "run" "stable" "rust-analyzer"))
   )
+
+(defun cvh/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+
 (defun cvh/rustic-mode-auto-save-hook ()
   "Enable auto-saving in rustic-mode buffers."
   (when buffer-file-name
@@ -981,10 +988,10 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
-  ;; :bind (:map company-active-map
-  ;;        ("<tab>" . company-complete-selection))
-  ;;       (:map lsp-mode-map
-  ;;        ("<tab>" . company-indent-or-complete-common))
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
