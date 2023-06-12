@@ -1,20 +1,11 @@
-;; list the packages you want
-(setq package-list
-      '(better-defaults
-	elpy
-	flycheck
-	py-autopep8
-	blacken
-	material-theme
-	ob-rust
-	editorconfig
-	wakatime-mode
-	lsp-mode
-	use-package
-	multiple-cursors
-	)
-      )
-
+;; Profile emacs startup
+(add-hook 'emacs-startup-hook
+	  (lambda ()
+	    (message "*** Emacs loaded in %s with %d garbage collections."
+		     (format "%.2f seconds"
+			     (float-time
+			      (time-subtract after-init-time before-init-time)))
+		     gcs-done)))
 
 (setq package-archives
              '(("melpa" . "https://melpa.org/packages/")
@@ -33,14 +24,36 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-;; Profile emacs startup
-(add-hook 'emacs-startup-hook
-	  (lambda ()
-	    (message "*** Emacs loaded in %s with %d garbage collections."
-		     (format "%.2f seconds"
-			     (float-time
-			      (time-subtract after-init-time before-init-time)))
-		     gcs-done)))
+;; list the packages you want
+(setq package-list
+      '(better-defaults
+	elpy
+	flycheck
+	py-autopep8
+	blacken
+	material-theme
+	ob-rust
+	editorconfig
+	wakatime-mode
+	lsp-mode
+	use-package
+	multiple-cursors
+	)
+      )
+
+;; Install straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+	(url-retrieve-synchronously
+	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	 'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
 
 ;; Silence compiler warnings as they are disruptive
@@ -122,8 +135,8 @@
   (lsp-rust-analyzer-display-chaining-hints t)
   (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
   (lsp-rust-analyzer-display-closure-return-type-hints t)
-  (lsp-rust-analyzer-display-parameter-hints nil)
-  (lsp-rust-analyzer-display-reborrow-hints nil)
+  (lsp-rust-analyzer-display-parameter-hints t)
+  (lsp-rust-analyzer-display-reborrow-hints t)
   :config
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
@@ -132,8 +145,8 @@
 (use-package company
   :ensure
   :custom
-  (company-idle-delay 0.5) ;; how long to wait until popup
-  (company-begin-commands nil) ;; uncomment to disable popup
+  (company-idle-delay 1) ;; how long to wait until popup, was 0.5
+  (company-begin-commands t) ;; uncomment to disable popup
   :bind
   (:map company-active-map
 	      ("C-n". company-select-next)
@@ -193,19 +206,19 @@
  
 (require 'multiple-cursors)
 
-(add-to-list 'load-path "~/.emacs.d/copilot.el")
-(require 'copilot)
+
 
 
 ;; Initialize use-package on non-Linux platforms
  (unless (package-installed-p 'use-package)
    (package-install 'use-package))
 
- (require 'use-package)
- (setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure t)
 
- (set-language-environment "UTF-8")
- (set-default-coding-systems 'utf-8)
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+(customize-set-variable 'load-prefer-newer t)
  
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (use-package fira-code-mode								  ;;
@@ -253,14 +266,17 @@
    '(nyan-animate-nyancat t)
    '(nyan-mode t)))
 
-
-
 ;; Get autopep8p
 (use-package py-autopep8
   :ensure t
   )
- 					;
-;; Get Copilot
+
+(use-package copilot
+  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+  :ensure t)
+;; you can utilize :map :hook and :config to customize copilot
+		
+;; Setup Copilot
 (require 'cl)
 (let ((pkg-list '(use-package
 		          s
@@ -300,6 +316,10 @@
 ;; Immediately kill the focused buffer
 (global-unset-key (kbd "C-x k"))
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+;; Make shebang (#!) file executable when saved
+(add-hook 'after-save-hook
+	  #'executable-make-buffer-file-executable-if-script-p)
 
 ;; Python mode --> autoformat tabs and comments
 (defun my-format-python-text ()
@@ -382,10 +402,10 @@ is available. Useful if you tend to hammer your keys like I do."
     (copilot-complete)))
 
 (define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
-(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion)
+(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion) 
 (define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "M-C-<down>") #'copilot-accept-completion-by-line)
-(define-key global-map (kbd "M-C-<return>") #'cvh/copilot-complete-or-accept)
+(define-key copilot-mode-map (kbd "M-C-=") #'copilot-accept-completion-by-line)
+(define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)
 
 (defun cvh/copilot-tab ()
   "Tab command that will complet with copilot if a completion is
@@ -396,7 +416,7 @@ tab-indent."
    (company-complete)
    (indent-for-tab-command)))
 
-(define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
+;; (define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
 
 (defun cvh/copilot-quit ()
   "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
@@ -418,12 +438,11 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(scroll-bar-mode -1)        ; Disable visible scrollbar
-(tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 10)        ; Give some breathing room
-
-(menu-bar-mode -1)            ; Disable the menu bar
+(scroll-bar-mode -1)        ;; Disable visible scrollbar
+(tool-bar-mode -1)          ;; Disable the toolbar
+(tooltip-mode -1)           ;; Disable tooltips
+(set-fringe-mode 10)        ;; Give some breathing room
+(menu-bar-mode -1)          ;; Disable the menu bar
 
 ;; Set up the visible bell
 (setq visible-bell t)
@@ -452,9 +471,6 @@ cleared, make sure the overlay doesn't come back too soon."
                 treemacs-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-;; Set up the visual bell
-(setq visual-bell t)
 
 ;;  A doom theme
 ;; (use-package doom-themes
@@ -515,10 +531,10 @@ cleared, make sure the overlay doesn't come back too soon."
 				("texi" . "zathura"))))
 
 ;; Toggle visible dotfiles
-(use-package dired-hide-dotfiles
-  :hook (dired-mode . dired-hide-dotfiles-mode)
-  :config
-  (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
+;; (use-package dired-hide-dotfiles
+  ;; :hook (dired-mode . dired-hide-dotfiles-mode)
+  ;; :config
+  ;; (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
 
 (setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
@@ -826,16 +842,15 @@ cleared, make sure the overlay doesn't come back too soon."
   :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
          ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
+         ("C-n" . ivy-next-line)
+         ("C-p" . ivy-previous-line)
          :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
+         ("C-p" . ivy-previous-line)
+         ("TAB" . ivy-done)
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
+         ("C-p" . ivy-previous-line)
+         ("C-r" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
@@ -866,7 +881,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
-  :custom ((doom-Emodeline-height 35)
+  :custom ((doom-Emodeline-height 55)
            (setq doom-modeline-buffer-file-name-style 'auto)
            (setq doom-modeline-icon (display-graphic-p))
            (setq doom-modeline-major-mode-icon t)
@@ -901,19 +916,6 @@ cleared, make sure the overlay doesn't come back too soon."
     "t" '(:ignore t :which-key "choose theme")
     "tt" '(counsel-load-theme :which-key "choose theme")))
 
-;; Fast keyswitching keybinginds
-(use-package hydra
-  :defer t)
-
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
-
-(cvh/leader-keys
-  "ts" '(hydra-text-scale/body :which-key "scale text"))
-
 ;; Make parenthesie life easier
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -922,16 +924,16 @@ cleared, make sure the overlay doesn't come back too soon."
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode))
 
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook (lsp-mode . cvh/lsp-mode-setup)
-  :init
-  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-  :config
-  (lsp-enable-which-key-integration t))
+;; (use-package lsp-mode
+;;   :commands (lsp lsp-deferred)
+;;   :hook (lsp-mode . cvh/lsp-mode-setup)
+;;   :init
+;;   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+;;   :config
+;;   (lsp-enable-which-key-integration t))
 
 (use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode)
+  :hook (lsp-mode . lsp-ui-mode)
   :config (setq lsp-ui-sideline-show-hover t
                 lsp-ui-sideline-delay 0.5
                 lsp-ui-doc-delay 5
@@ -950,17 +952,16 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package dap-mode
   ;; Uncomment the config below if you want all UI panes to be hidden by default!
-  ;;:custom
-  ;;(lsp-enable-dap-auto-configure nil)
+  :custom
+  (lsp-enable-dap-auto-configure nil)
   ;;:config
-  ;;(dap-ui-mode 1)
+  
   :commands dap-debug
   :config
+  (dap-ui-mode 1)
   ;; set up Node debugging
   (require 'dap-node)
   (dap-node-setup)) ;; Automatically installs Node debug adapter if needed
-
-
 
 ;; Setup the rust LSP
 (use-package rustic
@@ -1022,17 +1023,6 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (setq typescript-indent-level 2))
 
-(use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  ;; :bind (:map company-active-map
-  ;;        ("<tab>" . company-complete-selection))
-  ;;       (:map lsp-mode-map
-  ;;        ("<tab>" . company-indent-or-complete-common))
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
-
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
@@ -1042,20 +1032,3 @@ cleared, make sure the overlay doesn't come back too soon."
 (load custom-file 'noerror 'nomessage)
 
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(nyan-animate-nyancat t)
- '(nyan-cat-face-number 1)
- '(nyan-mode t)
- '(nyan-wavy-trail t)
- '(package-selected-packages
-   '(multiple-cursors wakatime-mode use-package py-autopep8 ob-rust material-theme lsp-ui flycheck elpy editorconfig blacken better-defaults)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
