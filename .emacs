@@ -223,13 +223,11 @@
 (global-set-key (kbd "C-,") #'imenu-list-smart-toggle)
 (setq imenu-list-focus-after-activation t)
 
+;; Find references
+(global-set-key (kbd "C-'") 'lsp-ui-peek-find-references)
+
 ;; Comment the line
 (global-set-key (kbd "C-;") 'comment-line)
-
-;; Peek definition in python mode; hook python mode
-(add-hook 'python-mode-hook
-	  (lambda ()
-	    (define-key python-mode-map (kbd "C-'") 'lsp-ui-peek-find-definitions)))
 
 ;; Set selected indent left
 (global-set-key (kbd "C-{") 'indent-rigidly-left-to-tab-stop)
@@ -243,6 +241,12 @@
 
 ;; Multiple Cursors
 (global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
+(global-unset-key (kbd "C-<down-mouse-1>"))
+(global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
 
 ;; Delete line from cursor to beginning
 (global-set-key (kbd "S-<delete>") 'kill-whole-line)
