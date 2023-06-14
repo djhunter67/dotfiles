@@ -24,17 +24,17 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-; activate all the packages (in particular autoloads)
+;; activate all the packages (in particular autoloads)
 (package-initialize)
 
-; fetch the list of packages available 
+;; fetch the list of packages available 
 (unless package-archive-contents
   (package-refresh-contents))
 
-; install the missing packages
-(dolist (package package-list)
-  (unless (package-installed-p package)
-    (package-install package)))
+;; install the missing packages
+;;(dolist (package package-list)
+ ;;(unless (package-installed-p package)
+   ;;(package-install package)))
 
 ;; list the packages you want
 (setq package-list
@@ -50,6 +50,8 @@
 	lsp-mode
 	use-package
 	multiple-cursors
+	yas-snippets
+	company
 	)
       )
 
@@ -112,7 +114,7 @@
 (global-wakatime-mode)
 
 ;; Enable autopep8
-;; (require 'py-autopep8)
+(require 'py-autopep8)
 
 
 (defun cvh/rustic-mode-hook ()
@@ -456,12 +458,12 @@ cleared, make sure the overlay doesn't come back too soon."
   :init (load-theme 'doom-dark+ t))
 ;; (load-theme 'modus-vivendi t)
 
-;; (use-package all-the-icons
-;;   :if (display-graphic-p)
-;;   :commands all-the-icons-install-fonts
-;;   :init
-;;   (unless (find-font (font-spec :name "all-the-icons"))
-;;     (all-the-icons-install-fonts t)))
+(use-package all-the-icons
+  :if (display-graphic-p)
+  :commands all-the-icons-install-fonts
+  :init
+  (unless (find-font (font-spec :name "all-the-icons"))
+    (all-the-icons-install-fonts t)))
 
 (use-package all-the-icons-dired
   :if (display-graphic-p)
@@ -777,7 +779,7 @@ cleared, make sure the overlay doesn't come back too soon."
   (eshell-git-prompt-use-theme 'powerline))
 
 (use-package helpful
-  :ensure t  ;; Redundant
+;;  :ensure t  ;; Redundant
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -788,21 +790,21 @@ cleared, make sure the overlay doesn't come back too soon."
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-;; (use-package projectile
-;;   :diminish projectile-mode
-;;   :config (projectile-mode)
-;;   :custom ((projectile-completion-system 'ivy))
-;;   :bind-keymap
-;;   ("C-c p" . projectile-command-map)
-;;   :init
-;;   ;; NOTE: Set this to the folder where you keep your Git repos!
-;;   (when (file-directory-p "~/Documents/code")
-;;     (setq projectile-project-search-path '("~/Documents/code")))
-;;   (setq projectile-switch-project-action #'projectile-dired))
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/Documents/code")
+    (setq projectile-project-search-path '("~/Documents/code")))
+  (setq projectile-switch-project-action #'projectile-dired))
 
-;; (use-package counsel-projectile
-  ;; :after projectile
-  ;; :config (counsel-projectile-mode))
+(use-package counsel-projectile
+  :after projectile
+  :config (counsel-projectile-mode))
 
 (use-package which-key
   :init (which-key-mode)
@@ -823,13 +825,13 @@ cleared, make sure the overlay doesn't come back too soon."
          ("TAB" . ivy-done)
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
-         ("C-p" . ivy-previous-line)
+         ("C-p" . ivy-previous-line))
          ;; ("C-r" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
 (use-package ivy-rich
-  ;; :after ivy
+  :after ivy
   :init
   (ivy-rich-mode 1))
 
