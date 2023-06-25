@@ -34,7 +34,8 @@ plugins=(
     command-not-found
     zsh-completions
     zsh-autosuggestions
-    zsh-syntax-highlighting)
+    zsh-syntax-highlighting
+)
 ###########################
 
 # precmd_vcs_info() { vcs_info }
@@ -45,6 +46,7 @@ setopt prompt_subst
 zstyle ':vcs_info:git:*' formats '%b'
 #fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=5'
 
 
 # Make any executable placed in ~/bin discoverable on $PATH
@@ -57,12 +59,12 @@ if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# setopt INC_APPEND_HISTORY
-# export HISTTIMEFORMAT="[%F %T] "
+setopt INC_APPEND_HISTORY
+export HISTTIMEFORMAT="[%F %T] "
 # Add timestampt to command
-# setopt EXTENDED_HISTORY
+setopt EXTENDED_HISTORY
 # No Duplicates
-# setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_ALL_DUPS
 
 # Color for manpages
 #
@@ -309,7 +311,7 @@ HISTFILE=~/.zsh_history
 HISTSIZE=4294967296
 SAVEHIST=4294967296
 setopt beep extendedglob nomatch
-# source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /home/djhunter67/dotfiles/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
