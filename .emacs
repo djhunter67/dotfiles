@@ -152,7 +152,7 @@
   :ensure
   :custom
   (company-idle-delay 1) ;; how long to wait until popup, was 0.5
-  (company-begin-commands t) ;; display popup immediatly in following cmds
+  ;; (company-begin-commands t) ;; display popup immediatly in following cmds
   :bind
   (:map company-active-map
 	      ("C-n". company-select-next)
@@ -313,8 +313,8 @@
 
 (eval-after-load "python"
   '(progn
-     (define-key python-mode-map (kbd "RET") 'newline-and-indent)
-     (define-key python-mode-map (kbd "<f4>") 'my-format-python-text)))
+     (define-key python-mode-map (kbd "RET") 'newline-and-indent)))
+     ;; (define-key python-mode-map (kbd "<f4>") 'my-format-python-text)))
 
 ;; Autopep8 execute
 (setq py-autopep8-options '("--max-line-length=100"))
@@ -951,25 +951,25 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Disable warnings on cargo test
 (setq rustic-cargo-test-disable-warnings t)
 
-(use-package lsp-python-ms
-  :ensure t
-  :init (setq lsp-python-ms-auto-install-server t)
-  :hook (python-mode . lsp)
-  :custom
-  ;; NOTE: Set these if Python 3 is called "python3" on your system!
-  ;; (python-shell-interpreter "python3")
-  ;; (dap-python-executable "python3")
-  (dap-python-debugger 'debugpy)
-  :config
-  (lsp-register-custom-settings
-   '(("pyls.plugins.pyls_mypy.enabled" t t)
-     ("pyls.plugins.pyls_mypy.live_mode" nil t)
-     ("pyls.plugins.pyls_black.enabled" t t)
-     ("pyls.plugins.pyls_isort.enabled" t t)))
-  (require 'dap-python))
+;; (use-package lsp-python-ms
+;;   :ensure t
+;;   :init (setq lsp-python-ms-auto-install-server t)
+;;   :hook (python-mode . lsp)
+;;   :custom
+;;   ;; NOTE: Set these if Python 3 is called "python3" on your system!
+;;   ;; (python-shell-interpreter "python3")
+;;   ;; (dap-python-executable "python3")
+;;   (dap-python-debugger 'debugpy)
+;;   :config
+;;   (lsp-register-custom-settings
+;;    '(("pyls.plugins.pyls_mypy.enabled" t t)
+;;      ("pyls.plugins.pyls_mypy.live_mode" nil t)
+;;      ("pyls.plugins.pyls_black.enabled" t t)
+;;      ("pyls.plugins.pyls_isort.enabled" t t)))
+;;   (require 'dap-python))
 
-(use-package lsp-jedi
-  :ensure t)
+;; (use-package lsp-jedi
+  ;; :ensure t)
     
 (use-package pyvenv
   :after python-mode
