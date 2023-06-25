@@ -309,7 +309,7 @@ HISTFILE=~/.zsh_history
 HISTSIZE=4294967296
 SAVEHIST=4294967296
 setopt beep extendedglob nomatch
-source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
