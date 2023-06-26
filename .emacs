@@ -1,7 +1,13 @@
 ;; -*- lexical-binding: t; -*-
 
-;; The default is 800 kilobytes.  Measured in bytes.
-(setq gc-cons-threshold (* 50 1000 1000))
+;; The default is 800 kilobytes.  Measured in bytes. 
+(setq gc-cons-threshold 100000000)  ;; 100mb
+
+;; Increase the amount of data which Emacs reads from the process
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
+
+;; Use plists instead of hashlist
+(setq lsp-use-plists t)
 
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
@@ -104,11 +110,30 @@
   (elpy-enable))
 
 
-;; Enable flycheck
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-   (add-hook 'elpy-mode-hook 'flycheck-mode))
+;; (require 'flymake-ruff)
+;; (add-hook 'python-mode-hook #'flymake-ruff-load)
 
+
+;; Enable flycheck
+;; (when (require 'flycheck nil t)
+  ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+   ;; (add-hook 'elpy-mode-hook 'flycheck-mode))
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode)
+  :hook (prog-mode . flycheck-mode)
+  :config
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (setq flycheck-python-flake8-executable "python3")
+  (setq flycheck-python-pycompile-executable "python3")
+  (setq flycheck-python-pylint-executable "python3")
+  (setq flycheck-python-mypy-executable "python3")
+  (setq flycheck-python-pyright-executable "python3")
+  (setq flycheck-python-pyright-venv "venv")
+  (setq flycheck-python-pyright-typechecking-mode "strict")
+  ;; ruff-lsp
+  (setq flycheck-ruff-executable "ruff-lsp")
+  )
 
 ;; Enable wakatime
 (global-wakatime-mode)
@@ -128,8 +153,13 @@
 
 ;; Rust IDE feature
 (use-package lsp-mode
-  :ensure
-  :commands lsp
+  :init
+  (setq lsp-keymap-prefix "C-c a")
+  :hook
+  (prog-mode . lsp)
+  (lsp-mode . lsp-enable-which-key-integration)
+  :ensure t
+  :commands (lsp)
   :custom
   ;; what to use when checking on-save. "check" is default, I prefer clippy
   (lsp-rust-analyzer-cargo-watch-command "clippy")
@@ -146,19 +176,20 @@
   :config
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-;; Company mode for Rust
-(use-package flycheck :ensure)
+;;Company mode 
 (use-package company
   :ensure
   :custom
   (company-idle-delay 1) ;; how long to wait until popup, was 0.5
+  (company-minimum-prefix-length 1) ;; how many chars before autocomplete
   ;; (company-begin-commands t) ;; display popup immediatly in following cmds
   :bind
   (:map company-active-map
-	      ("C-n". company-select-next)
-	      ("C-p". company-select-previous)
-	      ("M-<". company-select-first)
-	      ("M->". company-select-last)))
+	      ("M-n". company-select-next-or-abort)
+	      ("M-p". company-select-previous)
+	      ;; ("M-<". company-select-first)
+	      ;; ("M->". company-select-last)))
+	      ))
 
 (use-package yasnippet
   :ensure
@@ -217,17 +248,6 @@
 ;; Set the variable pitch face
 (set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
 
-(use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
-
 (use-package auto-package-update
   :custom
   (auto-package-update-interval 7)
@@ -283,12 +303,21 @@
 ;; Set C+; to comment entire line
 (global-set-key (kbd "C-;") 'comment-line)
 
+;; Set C+' to find references
+(global-set-key (kbd "C-'") 'lsp-find-references)
+
 ;; Switch buffers fast
 (global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
 (global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
 
 ;; Multiple Cursors
-(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
+(global-set-key (kbd "C-S-z ") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this-dwim)
+(global-unset-key (kbd "C-<down-mouse-1>"))  ;; Just in case
+(global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
+(define-key mc/keymap (kbd "<return>") nil)  ;; Disable non-newline enter
 
 ;; Delete line from cursor to beginning
 (global-set-key (kbd "S-<delete>") 'kill-whole-line)
@@ -790,17 +819,6 @@ cleared, make sure the overlay doesn't come back too soon."
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/Documents/code")
-    (setq projectile-project-search-path '("~/Documents/code")))
-  (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
   :after projectile
@@ -830,6 +848,19 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (ivy-mode 1))
 
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/Documents/code")
+    (setq projectile-project-search-path '("~/Documents/code")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+
 (use-package ivy-rich
   :after ivy
   :init
@@ -844,7 +875,7 @@ cleared, make sure the overlay doesn't come back too soon."
   :custom
   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
   :config
-  ;; (setq ivy-initial-inputs-alist nil) ;; Don't start searches with ^
+  (setq ivy-initial-inputs-alist nil) ;; Don't start searches with ^
   (counsel-mode 1))
 
 (use-package ivy-prescient
@@ -918,9 +949,11 @@ cleared, make sure the overlay doesn't come back too soon."
   (lsp-ui-doc-enable nil))
   
 (use-package lsp-treemacs
+  :commands (lsp-treemacs-errors-list)
   :after lsp)
 
 (use-package lsp-ivy
+  :commands (lsp-ivy-workspace-symbol)
   :after lsp)
 
 (use-package dap-mode
@@ -997,6 +1030,11 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
+
+;; Does not lint
+;; (use-package flymake-ruff
+  ;; :ensure t
+  ;; :hook (python-mode . flymake-ruff-load))
 
 ;; Save emacs auto configs to a seperate file then load it.
 (setq custom-file (locate-user-emacs-file "~/.emacs.d/custom-vars.el"))

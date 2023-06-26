@@ -113,6 +113,9 @@ export LESS_TERMCAP_md="${yellow}"
 # Golang Library and dependancies
 export PATH=$PATH:/usr/local/go/bin
 
+# Replace Emacs hash table deserialization method.
+export LSP_USE_PLISTS=true
+
 #######################################
 # User specific aliases
 #######################################
