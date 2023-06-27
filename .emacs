@@ -1031,10 +1031,16 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package company-box
   :hook (company-mode . company-box-mode))
 
-;; Does not lint
-;; (use-package flymake-ruff
-  ;; :ensure t
-  ;; :hook (python-mode . flymake-ruff-load))
+
+(require 'ivy-posframe)
+;; display at `ivy-posframe-style'
+(setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
+;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
+;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-center)))
+;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-bottom-left)))
+;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-bottom-left)))
+;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center)))
+(ivy-posframe-mode 1)
 
 ;; Save emacs auto configs to a seperate file then load it.
 (setq custom-file (locate-user-emacs-file "~/.emacs.d/custom-vars.el"))

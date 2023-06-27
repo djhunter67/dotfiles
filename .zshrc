@@ -5,7 +5,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-
 setopt SHARE_HISTORY
 setopt HIST_IGNORE_ALL_DUPS
 unsetopt HIST_IGNORE_DUPS
@@ -47,7 +46,8 @@ zstyle ':vcs_info:git:*' formats '%b'
 #fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=5'
-
+bindkey "^[[1;3C" forward-word
+bindkey "^[[1;3D" backward-word
 
 # Make any executable placed in ~/bin discoverable on $PATH
 if [ -d "$HOME/bin" ]; then
@@ -78,6 +78,7 @@ export LESS_TERMCAP_us=$'\E[01;32m'
 
 # Increase Bash history size. Allow 32³ entries; the default is 500.
 #
+HISTFILE=~/.zsh_history
 export HISTSIZE='32768'
 export HISTFILESIZE="${HISTSIZE}"
 
@@ -264,13 +265,18 @@ This project, henceforth, will recongnize [semantic versioning](https://semver.o
 											       
 Here we write upgrade and change notes.						       
 											       
-⭐ MAJOR version when you make incompatible API changes,				       
+⭐              MAJOR version when you make incompatible API changes,				       
 											       
 ✴️ MINOR version when you add functionality in a backwards compatible manner		       
 											       
 ✳️ PATCH version when you make backwards compatible bug fixes.				       
 											       
---------------------------------------						       
+--------------------------------------
+
+✳️[0.0.1] - 2023 JUNE 25
+
+- Automatic initialization of the project structure 
+
 EOT
 
     [[ -f ~/.gitignore_global ]] && cat /home/djhunter67/.gitignore_global > .gitignore
@@ -286,7 +292,7 @@ This PR...
 ## Changes										       
 											       
 -											       
-## Screenshotsg10									       
+## Screenshots10									       
 											       
 (prefer animated gif)									       
 											       
@@ -303,16 +309,16 @@ This PR...
 EOT
     popd
     git add . &>/dev/null &&
-        git cm "init git" &>/dev/null &&
+        git cm "init: initializing the project" &>/dev/null &&
         tre -L 3 -I venv
 }
 
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # Lines configured by zsh-newuser-install
-HISTFILE=~/.zsh_history
-HISTSIZE=4294967296
-SAVEHIST=4294967296
+# HISTFILE=~/.zsh_history
+# HISTSIZE=4294967296
+# SAVEHIST=4294967296
 setopt beep extendedglob nomatch
 source /home/djhunter67/dotfiles/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
