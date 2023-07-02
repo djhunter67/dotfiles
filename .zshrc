@@ -172,10 +172,6 @@ alias paths='echo -e ${PATH//:/\\n}'
 #
 alias speedtest="wget -O /dev/null http://speed.transip.nl/100mb.bin"
 
-# Clear DELUGE
-#
-alias DELUGE='rm -rf ~/Downloads/DELUGE/*'
-
 # Make CAPS LOCK into CTRL
 #
 #xmodmap ~/.Xmodmap

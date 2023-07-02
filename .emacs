@@ -115,9 +115,9 @@
 
 
 ;; Enable flycheck
-;; (when (require 'flycheck nil t)
-  ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-   ;; (add-hook 'elpy-mode-hook 'flycheck-mode))
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+   (add-hook 'elpy-mode-hook 'flycheck-mode))
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode)
@@ -134,6 +134,12 @@
   ;; ruff-lsp
   (setq flycheck-ruff-executable "ruff-lsp")
   )
+
+
+(custom-set-variables
+ '(flycheck-python-flake8-executable "python3")
+ '(flycheck-python-pycompile-executable "python3")
+ '(flycheck-python-pylint-executable "python3"))
 
 ;; Enable wakatime
 (global-wakatime-mode)
@@ -329,6 +335,30 @@
 ;; Make shebang (#!) file executable when saved
 (add-hook 'after-save-hook
 	  #'executable-make-buffer-file-executable-if-script-p)
+
+;;;;;;;;;;;;;;;;;;;;
+;; HTML variables ;;
+;;;;;;;;;;;;;;;;;;;;
+
+;; Enable LSP for HTML for HTML files
+(add-hook 'html-mode-hook #'lsp)
+
+;; A list of JSON file paths that define custom tags, properties and other HTML syntax constructs.
+(setq lsp-html-experimental-custom-data (list (expand-file-name "html-languageserver.json" user-emacs-directory)))
+
+;; Format unformatted content
+(setq lsp-html-format-content-unformatted t)
+
+;; Format end with newline
+(setq lsp-html-format-end-with-newline t)
+
+;; Format indent handlebars
+(setq lsp-html-format-indent-handlebars t)
+
+;; Format indent inner html
+(setq lsp-html-format-indent-inner-html t)
+
+
 
 ;; Python mode --> autoformat tabs and comments
 (defun my-format-python-text ()
@@ -1041,6 +1071,12 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-bottom-left)))
 ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center)))
 (ivy-posframe-mode 1)
+
+;; Live preview of markdown
+  (defun markdown-html (buffer)
+    (princ (with-current-buffer buffer
+      (format "<!DOCTYPE html><html><title>Impatient Markdown</title><xmp theme=\"united\" style=\"display:none;\"> %s  </xmp><script src=\"http://ndossougbe.github.io/strapdown/dist/strapdown.js\"></script></html>" (buffer-substring-no-properties (point-min) (point-max))))
+    (current-buffer)))
 
 ;; Save emacs auto configs to a seperate file then load it.
 (setq custom-file (locate-user-emacs-file "~/.emacs.d/custom-vars.el"))
