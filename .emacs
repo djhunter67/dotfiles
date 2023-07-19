@@ -306,6 +306,17 @@
 ;; Define custom keybinding ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Keybind C-S-i to cargo-fmt in rust-mode
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)))
+
+;; In python mode, set M-p to python-nav-backward-block
+(add-hook 'python-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "M-p") #'python-nav-backward-block)))
+
+
 ;; Set C+; to comment entire line
 (global-set-key (kbd "C-;") 'comment-line)
 
@@ -379,6 +390,9 @@
 (setq py-autopep8-options '("--max-line-length=100"))
 (define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer)
 (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+
+
+
 
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()

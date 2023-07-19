@@ -49,6 +49,12 @@ export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=5'
 bindkey "^[[1;3C" forward-word
 bindkey "^[[1;3D" backward-word
 
+# Load Git completion
+zstyle ':completion:*:*:git:*' script ~/.zsh/git-completion.bash
+fpath=(~/.zsh $fpath)
+
+autoload -Uz compinit && compinit
+
 # Make any executable placed in ~/bin discoverable on $PATH
 if [ -d "$HOME/bin" ]; then
     export PATH="$HOME/bin:$PATH"
@@ -93,10 +99,6 @@ export EDITOR='emacs'
 
 # Change caps lock to left CTRL
 #xmodmap ~/.Xmodmap
-
-# Make Python use UTF-8 encoding for output to stdin, stdout, and stderr.
-#
-export PYTHONIOENCODING='UTF-8'
 
 # Make Python use UTF-8 encoding for output to stdin, stdout, and stderr.
 #
@@ -176,6 +178,10 @@ alias speedtest="wget -O /dev/null http://speed.transip.nl/100mb.bin"
 #
 #xmodmap ~/.Xmodmap
 
+# Clear DELUGE
+#
+# alias DELUGE='rm -rf ~/Downloads/DELUGE/*'
+
 ######################################
 # User defined functions
 ######################################
@@ -234,8 +240,8 @@ function r_sync() {
     rsync -Paurvh --stats --progress $1 $2
 }
 
-# `venv` is a function that will initial a python virtualenv virtual envrionment with the name 'venv'
-# The virtual environment will be activated and pip updated.  Basic directory structure will be set up.
+# `venv` is a function that will initialize a python virtualenv virtual envrionment with the name 'venv'
+# The virtual environment will be activated and update pip.  Basic directory structure will be set up.
 # The venv function will suppress all output except the last line; git init.
 function venv() {
 
@@ -312,9 +318,6 @@ EOT
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # Lines configured by zsh-newuser-install
-# HISTFILE=~/.zsh_history
-# HISTSIZE=4294967296
-# SAVEHIST=4294967296
 setopt beep extendedglob nomatch
 source /home/djhunter67/dotfiles/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
