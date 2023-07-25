@@ -46,8 +46,6 @@ zstyle ':vcs_info:git:*' formats '%b'
 #fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=5'
-bindkey "^[[1;3C" forward-word
-bindkey "^[[1;3D" backward-word
 
 # Load Git completion
 zstyle ':completion:*:*:git:*' script ~/.zsh/git-completion.bash
@@ -65,10 +63,11 @@ if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-setopt INC_APPEND_HISTORY
-export HISTTIMEFORMAT="[%F %T] "
+# setopt INC_APPEND_HISTORY
+# export HISTTIMEFORMAT="[%F %T] "
 # Add timestampt to command
-setopt EXTENDED_HISTORY
+# setopt EXTENDED_HISTORY
+
 # No Duplicates
 setopt HIST_IGNORE_ALL_DUPS
 
