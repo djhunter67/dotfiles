@@ -7,7 +7,18 @@ set -e
 #then
 #    echo "Must be root to run this script."
 #    exit $E_NOTROOT
-#fi  
+#fi
+
+# packages to install
+PACKAGES=(
+    "wakatime-cli"
+    "v4l2loopback-dkms"
+    "ffmpeg"
+    "nodejs"
+    "npm"
+    "ruff-lsp"
+    "tree"
+)
 
 # Make the work directory
 pushd ~/Documents 
@@ -42,5 +53,6 @@ sudo pacman -S git base-devel --noconfirm
 
 # Link gitconfig
 ln -s dotfiles/.gitconfig .gitconfig
+
 
 

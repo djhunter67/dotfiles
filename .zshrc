@@ -63,6 +63,8 @@ if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
+export KITTY_CONFIG_DIRECTORY="$HOME/.config/kitty/kitty.conf"
+
 # setopt INC_APPEND_HISTORY
 # export HISTTIMEFORMAT="[%F %T] "
 # Add timestampt to command
@@ -318,7 +320,7 @@ source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # Lines configured by zsh-newuser-install
 setopt beep extendedglob nomatch
-source /home/djhunter67/dotfiles/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

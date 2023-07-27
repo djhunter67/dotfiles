@@ -7,7 +7,7 @@
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; Use plists instead of hashlist
-(setq lsp-use-plists t)
+;; (setq lsp-use-plists t)
 
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
@@ -44,7 +44,8 @@
 
 ;; list the packages you want
 (setq package-list
-      '(better-defaults
+      '(
+	better-defaults
 	elpy
 	flycheck
 	py-autopep8
@@ -58,6 +59,7 @@
 	multiple-cursors
 	yas-snippets
 	company
+	ivy-posframe
 	)
       )
 
@@ -299,7 +301,10 @@
   :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
   ;; don't show in mode line
   :diminish)
-  
+
+
+;; Disable the busted ass python-mypy checker
+(setq-default flycheck-disabled-checkers '(python-mypy))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1000,18 +1005,18 @@ cleared, make sure the overlay doesn't come back too soon."
   :commands (lsp-ivy-workspace-symbol)
   :after lsp)
 
-(use-package dap-mode
+;;(use-package dap-mode
   ;; Uncomment the config below if you want all UI panes to be hidden by default!
-  :custom
-  (lsp-enable-dap-auto-configure t)
+  ;;:custom
+  ;;(lsp-enable-dap-auto-configure t)
   ;;:config
   
-  :commands dap-debug
-  :config
-  (dap-ui-mode 1)
+  ;:commands dap-debug
+  ;:config
+  ;(dap-ui-mode 1)
   ;; set up Node debugging
-  (require 'dap-node)
-  (dap-node-setup)) ;; Automatically installs Node debug adapter if needed
+  ;(require 'dap-node)
+  ;(dap-node-setup)) ;; Automatically installs Node debug adapter if needed
 
 ;; Setup the rust LSP
 (use-package rustic
