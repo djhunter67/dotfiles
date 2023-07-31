@@ -3,6 +3,7 @@
 # Define colors for different log types
 
 ERROR_COLOR='\033[0;31m'       # Red
+WARNING_COLOR='\033[0;33m'     # Yellow
 CRITICAL_COLOR='\033[1;31m'    # Bold Red
 INFO_COLOR='\033[0;32m'        # Green
 DEBUG_COLOR='\033[0;34m'       # Blue
@@ -16,8 +17,8 @@ colorize_log() {
             "ERROR")
                 echo -e "${ERROR_COLOR}$line${RESET_COLOR}"
                 ;;
-            "CRITICAL")
-                echo -e "${CRITICAL_COLOR}$line${RESET_COLOR}"
+            "WARNING")
+                echo -e "${WARNING_COLOR}$line${RESET_COLOR}"
                 ;;
             "INFO")
                 echo -e "${INFO_COLOR}$line${RESET_COLOR}"

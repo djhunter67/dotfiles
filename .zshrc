@@ -5,9 +5,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-setopt SHARE_HISTORY
-setopt HIST_IGNORE_ALL_DUPS
-unsetopt HIST_IGNORE_DUPS
 #!/bin/zsh
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
@@ -38,10 +35,10 @@ plugins=(
 ###########################
 
 # precmd_vcs_info() { vcs_info }
-# precmd_functions += ( precmd_vcs_info )
+# precmd_functions+=( precmd_vcs_info )
 setopt prompt_subst
-# RPROMPT='${vcs_info_msg_0_}'
-# PROMPT='${vcs_info_msg_0_}%# '
+RPROMPT='${vcs_info_msg_0_}'
+PROMPT='${vcs_info_msg_0_}%# '
 zstyle ':vcs_info:git:*' formats '%b'
 #fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -65,13 +62,30 @@ fi
 
 export KITTY_CONFIG_DIRECTORY="$HOME/.config/kitty/kitty.conf"
 
-# setopt INC_APPEND_HISTORY
-# export HISTTIMEFORMAT="[%F %T] "
+# Increase Bash history size. Allow 32³ entries; the default is 500.
+#
+HISTFILE=~/.zsh_history
+HISTSIZE=32768
+SAVEHIST=30000
+HISTFILESIZE="${HISTSIZE}"
+setopt APPENDHISTORY
+
+# Ignore duplicates, ls without options and builtin commands
+#
+HISTCONTROL=ignoreboth
+HISTIGNORE="&:ls:[bf]g:exit"
+
+# Modify history file
+setopt INC_APPEND_HISTORY
+HISTTIMEFORMAT="[%F %T] "
+
 # Add timestampt to command
-# setopt EXTENDED_HISTORY
+setopt EXTENDED_HISTORY
 
 # No Duplicates
 setopt HIST_IGNORE_ALL_DUPS
+setopt SHARE_HISTORY
+unsetopt HIST_IGNORE_DUPS
 
 # Color for manpages
 #
@@ -83,16 +97,6 @@ export LESS_TERMCAP_so=$'\E[01;44;33m'
 export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;32m'
 
-# Increase Bash history size. Allow 32³ entries; the default is 500.
-#
-HISTFILE=~/.zsh_history
-export HISTSIZE='32768'
-export HISTFILESIZE="${HISTSIZE}"
-
-# Ignore duplicates, ls without options and builtin commands
-#
-export HISTCONTROL=ignoreboth
-export HISTIGNORE="&:ls:[bf]g:exit"
 
 # Make emacs the default editor.
 #

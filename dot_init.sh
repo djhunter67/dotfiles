@@ -18,6 +18,9 @@ PACKAGES=(
     "npm"
     "ruff-lsp"
     "tree"
+    "libusb"
+    "webkit2gtk"
+    "gtk3"
 )
 
 # Make the work directory

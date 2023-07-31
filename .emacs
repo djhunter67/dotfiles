@@ -7,7 +7,7 @@
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; Use plists instead of hashlist
-;; (setq lsp-use-plists t)
+(setq lsp-use-plists t)
 
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
@@ -37,10 +37,8 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-;; install the missing packages
-;;(dolist (package package-list)
- ;;(unless (package-installed-p package)
-   ;;(package-install package)))
+;; Append to emacs PATH
+(setq user-emacs-directory "~/.emacs.d")
 
 ;; list the packages you want
 (setq package-list
@@ -57,11 +55,33 @@
 	lsp-mode
 	use-package
 	multiple-cursors
-	yas-snippets
+	ivy-yasnippet
 	company
 	ivy-posframe
+	flymake-ruff
 	)
       )
+
+;; install the missing packages
+(dolist (package package-list)
+ (unless (package-installed-p package)
+   (package-install package)))
+
+
+;; Eval new buffers to immediately update lsp
+;; (let* ((auto-insert nil) ; Disable auto insertion
+;;        (coding-system-for-read
+;; 	(or coding-system-for-read
+;; 	    (cdr (assq 'buffer-file-coding-system
+;; 		       desktop-buffer-locals))))
+;;        (buf (find-file-noselect buffer-filename :nowarn)))
+;;   (condition-case nil
+;;       (switch-to-buffer buf)
+;;     (error (pop-to-buffer buf)))
+;;   (and (not (eq major-mode desktop-buffer-major-mode))
+;;        (functionp desktop-buffer-major-mode)
+;;        (funcall desktop-buffer-major-mode)))
+
 
 ;; Install straight.el
 (defvar bootstrap-version)
@@ -77,12 +97,8 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-
 ;; Silence compiler warnings as they are disruptive
 (setq native-comp-async-report-warnings-errors nil)
-
-;; Append to emacs PATH
-(setq user-emacs-directory "~/.emacs.d")
 
 ;; Don't pop up UI dialogs
 (setq use-dialog-box nil)
@@ -112,9 +128,8 @@
   (elpy-enable))
 
 
-;; (require 'flymake-ruff)
-;; (add-hook 'python-mode-hook #'flymake-ruff-load)
-
+(require 'flymake-ruff)
+(add-hook 'python-mode-hook #'flymake-ruff-load)
 
 ;; Enable flycheck
 (when (require 'flycheck nil t)
@@ -137,7 +152,6 @@
   (setq flycheck-ruff-executable "ruff-lsp")
   )
 
-
 (custom-set-variables
  '(flycheck-python-flake8-executable "python3")
  '(flycheck-python-pycompile-executable "python3")
@@ -147,7 +161,7 @@
 (global-wakatime-mode)
 
 ;; Enable autopep8
-(require 'py-autopep8)
+;; (require 'py-autopep8)
 
 
 (defun cvh/rustic-mode-hook ()
@@ -188,7 +202,7 @@
 (use-package company
   :ensure
   :custom
-  (company-idle-delay 1) ;; how long to wait until popup, was 0.5
+  (company-idle-delay 0.5) ;; how long to wait until popup, was 0.5
   (company-minimum-prefix-length 1) ;; how many chars before autocomplete
   ;; (company-begin-commands t) ;; display popup immediatly in following cmds
   :bind
@@ -302,7 +316,6 @@
   ;; don't show in mode line
   :diminish)
 
-
 ;; Disable the busted ass python-mypy checker
 (setq-default flycheck-disabled-checkers '(python-mypy))
 
@@ -311,22 +324,24 @@
 ;; Define custom keybinding ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Keybind C-S-i to cargo-fmt in rust-mode
+;; Set C-<tab> to company-complete for only python-mode
+(global-set-key (kbd "C-<tab>") 'company-complete)
+
+;; Keybind C-S-i to format-buffer in rust-mode
 (add-hook 'rust-mode-hook
 	  (lambda ()
-	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)))
-
-;; In python mode, set M-p to python-nav-backward-block
-(add-hook 'python-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "M-p") #'python-nav-backward-block)))
-
+	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
+	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-implementation)
+))
 
 ;; Set C+; to comment entire line
 (global-set-key (kbd "C-;") 'comment-line)
 
-;; Set C+' to find references
-(global-set-key (kbd "C-'") 'lsp-find-references)
+;; Set C-' to xref-find-references in python-mode only
+;; (global-set-key (kbd "C-'") 'xref-find-references)
+(add-hook 'python-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
 
 ;; Switch buffers fast
 (global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
@@ -392,12 +407,9 @@
      ;; (define-key python-mode-map (kbd "<f4>") 'my-format-python-text)))
 
 ;; Autopep8 execute
-(setq py-autopep8-options '("--max-line-length=100"))
-(define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer)
-(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-
-
-
+(setq py-autopep8-options '("--max-line-length=80"))
+(define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer) ;; prev defined
+;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
@@ -909,7 +921,6 @@ cleared, make sure the overlay doesn't come back too soon."
     (setq projectile-project-search-path '("~/Documents/code")))
   (setq projectile-switch-project-action #'projectile-dired))
 
-
 (use-package ivy-rich
   :after ivy
   :init
@@ -982,20 +993,23 @@ cleared, make sure the overlay doesn't come back too soon."
   (lsp-headerline-breadcrumb-mode))
 
 (use-package lsp-ui
+  :after lsp
   :hook (lsp-mode . lsp-ui-mode)
-  :config (setq lsp-ui-sideline-show-hover t
-                lsp-ui-sideline-delay 0.5
-                lsp-ui-doc-delay 5
-                lsp-ui-sideline-ignore-duplicates t
-                lsp-ui-doc-position 'bottom
-                lsp-ui-doc-alignment 'frame
-                lsp-ui-doc-header nil
-                lsp-ui-doc-include-signature t
-                lsp-ui-doc-use-childframe t)
+  :config
+  (setq lsp-ui-sideline-show-hover t
+        lsp-ui-sideline-delay 0.5
+        lsp-ui-doc-delay 2
+        lsp-ui-sideline-ignore-duplicates t
+        lsp-ui-doc-position 'bottom
+        lsp-ui-doc-alignment 'frame
+        lsp-ui-doc-header nil
+        lsp-ui-doc-include-signature t
+        lsp-ui-doc-use-childframe t)
   :custom
   (lsp-ui-peek-always-show t)
   (lsp-ui-sideline-show-hover t)
-  (lsp-ui-doc-enable nil))
+  (lsp-ui-doc-enable nil)
+  (lsp-ui-doc-show))
   
 (use-package lsp-treemacs
   :commands (lsp-treemacs-errors-list)
@@ -1004,19 +1018,6 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package lsp-ivy
   :commands (lsp-ivy-workspace-symbol)
   :after lsp)
-
-;;(use-package dap-mode
-  ;; Uncomment the config below if you want all UI panes to be hidden by default!
-  ;;:custom
-  ;;(lsp-enable-dap-auto-configure t)
-  ;;:config
-  
-  ;:commands dap-debug
-  ;:config
-  ;(dap-ui-mode 1)
-  ;; set up Node debugging
-  ;(require 'dap-node)
-  ;(dap-node-setup)) ;; Automatically installs Node debug adapter if needed
 
 ;; Setup the rust LSP
 (use-package rustic
@@ -1050,8 +1051,8 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;      ("pyls.plugins.pyls_isort.enabled" t t)))
 ;;   (require 'dap-python))
 
-;; (use-package lsp-jedi
-  ;; :ensure t)
+(use-package lsp-jedi
+  :ensure t)
     
 (use-package pyvenv
   :after python-mode
@@ -1063,7 +1064,7 @@ cleared, make sure the overlay doesn't come back too soon."
 :hook (java-mode . lsp))
 
 (add-to-list 'auto-mode-alist
-	     '("\\.cu\\'" . c++-mode))
+	     '("\\.cpp\\'" . c++-mode))
 
 (use-package bash-completion
 :mode "\\.sh\\'"
@@ -1079,7 +1080,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
-
 
 (require 'ivy-posframe)
 ;; display at `ivy-posframe-style'
