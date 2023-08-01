@@ -131,6 +131,7 @@ export LSP_USE_PLISTS=true
 # alias python='/usr/local/bin/python3.10'
 # alias pip='/usr/local/bin/python3.10 -m pip'
 [ "$TERM" = "xterm-kitty" ] && alias ssh='kitty +kitten ssh'
+alias Ripley='ssh root@192.168.110.24'
 alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
 alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; pkill -f gphoto2;  gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"

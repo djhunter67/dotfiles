@@ -57,8 +57,7 @@
 	multiple-cursors
 	ivy-yasnippet
 	company
-	ivy-posframe
-	flymake-ruff
+	prettier
 	)
       )
 
@@ -164,15 +163,6 @@
 ;; (require 'py-autopep8)
 
 
-(defun cvh/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
-  (when buffer-file-name
-    (setq-local buffer-save-without-query t))
-  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
-
 ;; Rust IDE feature
 (use-package lsp-mode
   :init
@@ -204,11 +194,11 @@
   :custom
   (company-idle-delay 0.5) ;; how long to wait until popup, was 0.5
   (company-minimum-prefix-length 1) ;; how many chars before autocomplete
-  ;; (company-begin-commands t) ;; display popup immediatly in following cmds
+  ;; (company-begin-commands nif) ;; uncomment to disable popup
   :bind
   (:map company-active-map
-	      ("M-n". company-select-next-or-abort)
-	      ("M-p". company-select-previous)
+	      ("C-n". company-select-next-or-abort)
+	      ("C-p". company-select-previous)
 	      ;; ("M-<". company-select-first)
 	      ;; ("M->". company-select-last)))
 	      ))
@@ -323,6 +313,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define custom keybinding ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; unset C-S-i globally
+(global-unset-key (kbd "C-S-i"))
 
 ;; Set C-<tab> to company-complete for only python-mode
 (global-set-key (kbd "C-<tab>") 'company-complete)
@@ -994,6 +987,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package lsp-ui
   :after lsp
+  :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode)
   :config
   (setq lsp-ui-sideline-show-hover t
@@ -1021,16 +1015,36 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Setup the rust LSP
 (use-package rustic
-  :ensure t
-  :custom
-  (rustic-analyzer-command '("rustup" "run" "stable" "rust-analyzer"))
-  )
-(defun cvh/rustic-mode-auto-save-hook ()
-  "Enable auto-saving in rustic-mode buffers."
-  (when buffer-file-name
-    (setq-local compilation-ask-about-save nil)))
-(add-hook 'rustic-mode-hook #'cvh/rustic-mode-auto-save-hook)
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
 
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'cvh/rustic-mode-hook))
+
+(defun cvh/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+  
 ;; Disable warnings on cargo test
 (setq rustic-cargo-test-disable-warnings t)
 
