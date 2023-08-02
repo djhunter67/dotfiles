@@ -21,6 +21,7 @@ PACKAGES=(
     "libusb"
     "webkit2gtk"
     "gtk3"
+    "neofetch"
 )
 
 # Make the work directory

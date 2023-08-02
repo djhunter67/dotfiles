@@ -910,8 +910,8 @@ cleared, make sure the overlay doesn't come back too soon."
   ("C-c p" . projectile-command-map)
   :init
   ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/Documents/code")
-    (setq projectile-project-search-path '("~/Documents/code")))
+  (when (file-directory-p "~/Documents/work_worK_woRk_wOrk_Work_WORK")
+    (setq projectile-project-search-path '("~/Documents/work_worK_woRk_wOrk_Work_WORK")))
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package ivy-rich
