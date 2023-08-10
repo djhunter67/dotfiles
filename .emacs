@@ -66,6 +66,33 @@
  (unless (package-installed-p package)
    (package-install package)))
 
+;; (setq treesit-language-source-alist
+;;    '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+;;      (cmake "https://github.com/uyha/tree-sitter-cmake")
+;;      (css "https://github.com/tree-sitter/tree-sitter-css")
+;;      (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+;;      (go "https://github.com/tree-sitter/tree-sitter-go")
+;;      (html "https://github.com/tree-sitter/tree-sitter-html")
+;;      (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+;;      (json "https://github.com/tree-sitter/tree-sitter-json")
+;;      (make "https://github.com/alemuller/tree-sitter-make")
+;;      (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+;;      (python "https://github.com/tree-sitter/tree-sitter-python")
+;;      (toml "https://github.com/tree-sitter/tree-sitter-toml")
+;;      (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+;;      (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+;;      ;; (rust "https://github.com/tree-sitter/tree-sitter-rust" "master" "rust/src")
+;;      (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+
+;; (setq major-mode-remap-alist
+;;  '((yaml-mode . yaml-ts-mode)
+;;    (bash-mode . bash-ts-mode)
+;;    (js2-mode . js-ts-mode)
+;;    (typescript-mode . typescript-ts-mode)
+;;    (json-mode . json-ts-mode)
+;;    (css-mode . css-ts-mode)
+;;    (python-mode . python-ts-mode)))
+
 
 ;; Eval new buffers to immediately update lsp
 ;; (let* ((auto-insert nil) ; Disable auto insertion
@@ -92,8 +119,7 @@
 	(url-retrieve-synchronously
 	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
 	 'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
+      (goto-char (point-max))))
   (load bootstrap-file nil 'nomessage))
 
 ;; Silence compiler warnings as they are disruptive
@@ -251,14 +277,24 @@
   ;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
   ;; :hook prog-mode)  								  ;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun cvh/set-font-faces ()
+  (message "Setting faces!")
+  (set-face-attribute 'default nil :font "Fira Code Retina" :height cvh/default-font-size)
 
-(set-face-attribute 'default nil :font "Fira Code Retina" :height cvh/default-font-size)
+  ;; Set the fixed pitch face
+  (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
 
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
+  ;; Set the variable pitch face
+  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
+  )
 
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+	      (lambda (frame)
+		(setq doom-modeline-icon t)
+		(with-selected-frame frame
+		  (cvh/set-font-faces))))
+  (cvh/set-font-faces))
 
 (use-package auto-package-update
   :custom
@@ -324,7 +360,7 @@
 (add-hook 'rust-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
-	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-implementation)
+	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
 ))
 
 ;; Set C+; to comment entire line
@@ -334,8 +370,8 @@
 ;; (global-set-key (kbd "C-'") 'xref-find-references)
 (add-hook 'python-mode-hook
 	  (lambda ()
+	    (local-set-key (kbd "C-c C-a b") 'dap-breakpoint-toggle)
 	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
-
 ;; Switch buffers fast
 (global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
 (global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
@@ -1014,26 +1050,26 @@ cleared, make sure the overlay doesn't come back too soon."
   :after lsp)
 
 ;; Setup the rust LSP
-(use-package rustic
-  :ensure
-  :bind (:map rustic-mode-map
-              ("M-j" . lsp-ui-imenu)
-              ("M-?" . lsp-find-references)
-              ("C-c C-c l" . flycheck-list-errors)
-              ("C-c C-c a" . lsp-execute-code-action)
-              ("C-c C-c r" . lsp-rename)
-              ("C-c C-c q" . lsp-workspace-restart)
-              ("C-c C-c Q" . lsp-workspace-shutdown)
-              ("C-c C-c s" . lsp-rust-analyzer-status))
-  :config
+;; (use-package rustic
+;;   :ensure
+;;   :bind (:map rustic-mode-map
+;;               ("M-j" . lsp-ui-imenu)
+;;               ("M-?" . lsp-find-references)
+;;               ("C-c C-c l" . flycheck-list-errors)
+;;               ("C-c C-c a" . lsp-execute-code-action)
+;;               ("C-c C-c r" . lsp-rename)
+;;               ("C-c C-c q" . lsp-workspace-restart)
+;;               ("C-c C-c Q" . lsp-workspace-shutdown)
+;;               ("C-c C-c s" . lsp-rust-analyzer-status))
+;;   :config
   ;; uncomment for less flashiness
   ;; (setq lsp-eldoc-hook nil)
   ;; (setq lsp-enable-symbol-highlighting nil)
   ;; (setq lsp-signature-auto-activate nil)
 
   ;; comment to disable rustfmt on save
-  (setq rustic-format-on-save t)
-  (add-hook 'rustic-mode-hook 'cvh/rustic-mode-hook))
+  ;; (setq rustic-format-on-save t)
+  ;; (add-hook 'rustic-mode-hook 'cvh/rustic-mode-hook))
 
 (defun cvh/rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
@@ -1047,6 +1083,27 @@ cleared, make sure the overlay doesn't come back too soon."
   
 ;; Disable warnings on cargo test
 (setq rustic-cargo-test-disable-warnings t)
+
+(use-package dap-mode
+  :config
+  (dap-mode t)
+  :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra))))
+;; (dap-ui-mode t))
+
+(require 'dap-python)
+;; if you installed debugpy, you need to set this
+;; https://github.com/emacs-lsp/dap-mode/issues/306
+(setq dap-python-debugger 'debugpy)
+
+;; Template examples
+;; (dap-register-debug-template "My App"
+;;   (list :type "python"
+;;         :args "-i"
+;;         :cwd nil
+;;         :env '(("DEBUG" . "1"))
+;;         :target-module (expand-file-name "~/src/myapp/.env/bin/myapp")
+;;         :request "launch"
+;;         :name "My App"))
 
 ;; (use-package lsp-python-ms
 ;;   :ensure t
@@ -1065,9 +1122,9 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;      ("pyls.plugins.pyls_isort.enabled" t t)))
 ;;   (require 'dap-python))
 
-(use-package lsp-jedi
-  :ensure t)
-    
+;; (use-package lsp-jedi
+  ;; :ensure t)
+
 (use-package pyvenv
   :after python-mode
   :config

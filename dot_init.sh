@@ -13,6 +13,7 @@ set -e
 PACKAGES=(
     "wakatime-cli"
     "v4l2loopback-dkms"
+    "gphoto2"
     "ffmpeg"
     "nodejs"
     "npm"

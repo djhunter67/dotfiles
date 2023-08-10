@@ -76,13 +76,16 @@ HISTCONTROL=ignoreboth
 HISTIGNORE="&:ls:[bf]g:exit"
 
 # Modify history file
+#
 setopt INC_APPEND_HISTORY
 HISTTIMEFORMAT="[%F %T] "
 
 # Add timestampt to command
+#
 setopt EXTENDED_HISTORY
 
 # No Duplicates
+#
 setopt HIST_IGNORE_ALL_DUPS
 setopt SHARE_HISTORY
 unsetopt HIST_IGNORE_DUPS
@@ -101,6 +104,10 @@ export LESS_TERMCAP_us=$'\E[01;32m'
 # Make emacs the default editor.
 #
 export EDITOR='emacs'
+
+# Add the Rust binaries
+#
+export PATH="$PATH:/home/djhunter67/.cargo/bin"
 
 # Change caps lock to left CTRL
 #xmodmap ~/.Xmodmap
@@ -134,7 +141,7 @@ export LSP_USE_PLISTS=true
 alias Ripley='ssh root@192.168.110.24'
 alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
-alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; pkill -f gphoto2;  gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"
+alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; pkill -f gphoto2 && gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
