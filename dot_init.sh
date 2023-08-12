@@ -3,11 +3,19 @@
 # Stop on a nonzero return of any command
 set -e
 # Run as root
-#if [ "$UID" -ne "$ROOT_UID" ]
-#then
-#    echo "Must be root to run this script."
-#    exit $E_NOTROOT
-#fi
+if [ "$UID" -ne "$ROOT_UID" ]
+then
+    echo "Must be root to run this script."
+    exit $E_NOTROOT
+fi
+
+#########
+# NOTES #
+#########
+# If Nvidia card is installed, append the following line:
+# pcie_aspm=off
+# to /boot/loader/entries/{the present kernel} at the end of 
+# EX: options root=UUID=0a3407de-014b-458b-b5c1-848e92a327a3 rw quiet splash {enter option here}
 
 # packages to install
 PACKAGES=(

@@ -58,6 +58,7 @@
 	ivy-yasnippet
 	company
 	prettier
+	flymake-ruff
 	)
       )
 
