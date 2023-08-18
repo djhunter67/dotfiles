@@ -31,6 +31,8 @@ PACKAGES=(
     "webkit2gtk"
     "gtk3"
     "neofetch"
+    "texlive"
+    "hunspell-en_us"
 )
 
 # Make the work directory

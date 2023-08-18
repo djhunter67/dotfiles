@@ -203,7 +203,7 @@
   ;; what to use when checking on-save. "check" is default, I prefer clippy
   (lsp-rust-analyzer-cargo-watch-command "clippy")
   (lsp-eldoc-render-all t)
-  (lsp-idle-delay 0.6)
+  (lsp-idle-delay 0.1)
   ;; enable / disable the hints as you prefer:
   (lsp-rust-analyzer-server-display-inlay-hints t)
   (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
@@ -219,7 +219,7 @@
 (use-package company
   :ensure
   :custom
-  (company-idle-delay 0.5) ;; how long to wait until popup, was 0.5
+  (company-idle-delay 0.2) ;; how long to wait until popup, was 0.5
   (company-minimum-prefix-length 1) ;; how many chars before autocomplete
   ;; (company-begin-commands nif) ;; uncomment to disable popup
   :bind
