@@ -362,7 +362,29 @@
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
-))
+	    )
+	  )
+
+;; Set C-S-i to indent-for-tab in html-mode
+(defun cvh/indent-buffer ()
+  "Indent the entire buffer using `indent-for-tab-command'."
+  (interactive)
+  (save-excursion
+    (mark-whole-buffer)
+    (indent-for-tab-command)))
+
+(defvar cvh/modes-to-indent
+  '(html-mode
+    css-mode
+    scss-mode
+    elisp-mode
+    ))
+
+(dolist (mode cvh/modes-to-indent)
+  (add-hook (intern (concat (symbol-name mode) "-hook"))
+            (lambda ()
+	      (local-set-key (kbd "C-S-i") 'cvh/indent-buffer))
+	    t))
 
 ;; Set C+; to comment entire line
 (global-set-key (kbd "C-;") 'comment-line)
