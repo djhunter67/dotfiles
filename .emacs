@@ -351,6 +351,10 @@
 ;; Define custom keybinding ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Set C-x o to C-{ to switch cursor to other windows
+(global-unset-key (kbd "C-x o"))
+(global-set-key (kbd "C-{") 'other-window)
+
 ;; unset C-S-i globally
 (global-unset-key (kbd "C-S-i"))
 
