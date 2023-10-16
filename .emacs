@@ -399,6 +399,7 @@
 	  (lambda ()
 	    (local-set-key (kbd "C-c C-a b") 'dap-breakpoint-toggle)
 	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
+
 ;; Switch buffers fast
 (global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
 (global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
@@ -448,7 +449,7 @@
 
 
 ;; Python mode --> autoformat tabs and comments
-(defun my-format-python-text ()
+(defun cvh/my-format-python-text ()
   "untabify and wrap python comments"
   (interactive)
   (untabify (point-min) (point-max))
@@ -457,10 +458,32 @@
     (call-interactively 'fill-paragraph)
     (forward-line 1)))
 
+;; Create a function that runs indent-for-tab-command for every line in the buffer
+(defun cvh/my-indent-whole-buffer ()
+  "Indent the whole buffer"
+  (interactive)
+  (save-excursion
+    (indent-region (point-min) (point-max) nil)))
+
+
 (eval-after-load "python"
   '(progn
      (define-key python-mode-map (kbd "RET") 'newline-and-indent)))
-     ;; (define-key python-mode-map (kbd "<f4>") 'my-format-python-text)))
+;; (define-key python-mode-map (kbd "<f4>") 'cvh/my-format-python-text)))
+
+;; In css and html mode keybind my-format-python-text to C-S-i
+(add-hook 'css-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") 'cvh/my-indent-whole-buffer)
+	    )
+	  )
+(add-hook 'html-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") 'cvh/my-indent-whole-buffer)
+	    )
+	  )
+
+	   
 
 ;; Autopep8 execute
 (setq py-autopep8-options '("--max-line-length=80"))
@@ -1003,6 +1026,13 @@ cleared, make sure the overlay doesn't come back too soon."
   (prescient-persist-mode 1)
   (ivy-prescient-mode 1))
 
+;; Markdown live rendering
+
+(defun markdown-html (buffer)
+  (princ (with-current-buffer buffer
+	   (format "<!DOCTYPE html><html><title>Impatient Markdown</title><xmp theme=\"united\" style=\"display:none;\"> %s  </xmp><script src=\"http://ndossougbe.github.io/strapdown/dist/strapdown.js\"></script></html>" (buffer-substring-no-properties (point-min) (point-max))))
+	 (current-buffer)))
+
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
   :custom ((doom-Emodeline-height 55)
@@ -1178,6 +1208,12 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
+
+;; Set up scss mode
+(setq exec-path (cons (expand-file-name "/usr/bin/sass") exec-path))
+(autoload 'scss-mode "scss-mode")
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
+
 
 (require 'ivy-posframe)
 ;; display at `ivy-posframe-style'

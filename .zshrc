@@ -138,6 +138,7 @@ export LSP_USE_PLISTS=true
 # alias python='/usr/local/bin/python3.10'
 # alias pip='/usr/local/bin/python3.10 -m pip'
 # [ "$TERM" = "xterm-kitty" ] && alias ssh='kitty +kitten ssh'
+export TERM=xterm
 alias Ripley='ssh root@192.168.110.24'
 alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
@@ -336,3 +337,4 @@ source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+unset ZSH_AUTOSUGGEST_USE_ASYNC
