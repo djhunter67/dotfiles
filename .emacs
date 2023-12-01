@@ -486,7 +486,7 @@
 	   
 
 ;; Autopep8 execute
-(setq py-autopep8-options '("--max-line-length=80"))
+(setq py-autopep8-options '("--max-line-length=79"))
 (define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer) ;; prev defined
 ;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 

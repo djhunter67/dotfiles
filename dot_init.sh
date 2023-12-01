@@ -33,6 +33,26 @@ PACKAGES=(
     "neofetch"
     "texlive"
     "hunspell-en_us"
+    "arduino"
+    "zsh"
+    "zsh-theme-powerlevel10k"
+    "tree"
+    "texlive-basic"
+    "ruff"
+    "redis"
+    "openvpn"
+    "openssh"
+    "emacs"
+    "mesa"
+    "man-db"
+    "btop"
+    "ripgrep"
+    "firefox"
+    "docker"
+    "docker-compose"
+    "sqlite"
+    "bat"
+    "perf"
 )
 
 # Make the work directory
@@ -51,23 +71,77 @@ popd  # go to  home directory
 [[ ! -f ".ssh/id_ed22519_base_key.pub"  ]] && ssh-keygen -t ed25519 -N "" -f /home/${USER}/.ssh/id_ed25519_base_key -q
 
 # Blocking command to show the pub key; Add keys to github repo(s)
-less ~/.ssh/id_ed25519_base_key.pub
+echo "###############################################"
+echo "Place the key onto GitHub"
+echo "###############################################"
+cat ~/.ssh/id_ed25519_base_key.pub
+
 
 # When command closes clone dotfiles repo
 sudo pacman -S git base-devel --noconfirm
 [[ ! -d "dotfiles"  ]] && git clone git@github.com:djhunter67/dotfiles.git
 
 # Link to .zshrc that came from dotfiles
-[[ ! -f ".zshrc"  ]] && ln -s dotfiles/.zshrc .zshrc
+[[ ! -f "~/.zshrc"  ]] && ln -s dotfiles/.zshrc .zshrc
 
 # Link to .zsh_history
-[[ ! -f ".zsh_history" ]] && rm .zsh_history && ln -s dotfiles/.zsh_history .zsh_history
+[[ ! -f "~/.zsh_history" ]] && rm .zsh_history && ln -s dotfiles/.zsh_history .zsh_history
 
 # Link to .emacs; remove any existing file
-[[ ! -f ".emacs" ]] && rm -rf ~/.emacs && ln -s dotfiles/.emacs .emacs
+[[ -f "~/.emacs" ]] && rm -rf ~/.emacs; ln -s dotfiles/.emacs .emacs
 
 # Link gitconfig
 ln -s dotfiles/.gitconfig .gitconfig
+
+# Install yay
+echo "###############################################"
+echo "Installing yay"
+echo "###############################################"
+
+[[ -d ".BUILDS/yay" ]] && git clone https://aur.archlinux.org/yay.git .BUILDS/yay && pushd .BUILDS/yay && makepkg -si --noconfirm
+
+popd
+
+# Install all of the PACKAGES
+yay -S ${PACKAGES[@]} --noconfirm
+
+# Install rust
+echo "###############################################"
+echo "Installing Rust"
+echo "###############################################"
+
+pushd ~/.BUILDS
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -- -q -y
+
+rustup install stable
+rustup default stable
+
+popd
+
+# Install the latest stable version of python from source
+echo "###############################################"
+echo "Installing Python 3.12.0 from source"
+echo "###############################################"
+
+export PYTHON_VERSION=$(python -V)
+
+[[ ! -d ".BUILDS/python" ]] && pushd ~/.BUILDS && wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz
+tar -xf Python*.tar.xz
+pushd Python-3.12.0
+
+./configure --prefix=/home/${USER}/.local/ --exec-prefix=/home/${USER}/.local/ --enable-optimizations --bindir=/home/${USER}/.local/ --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6 --oldincludedir=/home/${USER}/.local/ --enable-ipv6
+
+make -j altinstall
+
+popd
+popd
+
+
+
+
+
+
+
 
 
 
