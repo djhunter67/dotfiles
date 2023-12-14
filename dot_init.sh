@@ -116,7 +116,7 @@ if ![ -d "~/.BUILDS/yay" ]; then
 fi
 
 # Install all of the PACKAGES
-#yay -S ${PACKAGES[@]} --noconfirm
+yay -S ${PACKAGES[@]} --noconfirm
 
 # Install rust
 echo "###############################################"
