@@ -3,11 +3,11 @@
 # Stop on a nonzero return of any command
 set -e
 # Run as root
-if [ "$UID" -ne "$ROOT_UID" ]
-then
-    echo "Must be root to run this script."
-    exit $E_NOTROOT
-fi
+#if [ "$UID" -ne "$ROOT_UID" ]
+#then
+#    echo "Must be root to run this script."
+#    exit $E_NOTROOT
+#fi
 
 #########
 # NOTES #
@@ -53,22 +53,24 @@ PACKAGES=(
     "sqlite"
     "bat"
     "perf"
+    "pls"
+    "awesome-terminal-fonts"
 )
 
 # Make the work directory
 pushd ~/Documents 
-[[ ! -d "work_worK_woRk_wOrk_Work_WORK" ]] && mkdir work_worK_woRk_wOrk_Work_WORK;
+![[  -d "work_worK_woRk_wOrk_Work_WORK" ]] && mkdir work_worK_woRk_wOrk_Work_WORK;
 
 popd  # go to  home directory
 
 # Make the development directory
-[[ ! -d "dev" ]] && mkdir dev
+![[ -d "dev" ]] && mkdir dev
 
 # Create the .BUILD directory
-[[ ! -d ".BUILDS" ]] && mkdir .BUILDS
+![[ -d ".BUILDS" ]] && mkdir .BUILDS
 
 # Create ssh key to pull the dotfiles repo from github
-[[ ! -f ".ssh/id_ed22519_base_key.pub"  ]] && ssh-keygen -t ed25519 -N "" -f /home/${USER}/.ssh/id_ed25519_base_key -q
+![[ -f ".ssh/id_ed22519_base_key.pub"  ]] && ssh-keygen -t ed25519 -N "" -f /home/${USER}/.ssh/id_ed25519_base_key -q
 
 # Blocking command to show the pub key; Add keys to github repo(s)
 echo "###############################################"
@@ -79,31 +81,42 @@ cat ~/.ssh/id_ed25519_base_key.pub
 
 # When command closes clone dotfiles repo
 sudo pacman -S git base-devel --noconfirm
-[[ ! -d "dotfiles"  ]] && git clone git@github.com:djhunter67/dotfiles.git
+# ![[ -d "dotfiles"  ]] && git clone git@github.com:djhunter67/dotfiles.git
+
+![[ -d "~/.emacs.d/straight.el" ]] && pushd ~/.emacs.d/ && git clone git@github.com:radian-software/straight.el.git
+ 
 
 # Link to .zshrc that came from dotfiles
-[[ ! -f "~/.zshrc"  ]] && ln -s dotfiles/.zshrc .zshrc
+![[ -L "~/.zshrc"  ]] && ln -s dotfiles/.zshrc .zshrc
 
 # Link to .zsh_history
-[[ ! -f "~/.zsh_history" ]] && rm .zsh_history && ln -s dotfiles/.zsh_history .zsh_history
+![[ -f "~/.zsh_history" ]] && rm .zsh_history && ln -s dotfiles/.zsh_history .zsh_history
 
 # Link to .emacs; remove any existing file
-[[ -f "~/.emacs" ]] && rm -rf ~/.emacs; ln -s dotfiles/.emacs .emacs
+[[ -f "~/.emacs" ]] && rm -rf ~/.emacs && ln -s dotfiles/.emacs .emacs
 
 # Link gitconfig
-ln -s dotfiles/.gitconfig .gitconfig
+[[ -L "~/.gitconfig" ]] && ln -s dotfiles/.gitconfig .gitconfig
 
 # Install yay
 echo "###############################################"
 echo "Installing yay"
 echo "###############################################"
 
-[[ -d ".BUILDS/yay" ]] && git clone https://aur.archlinux.org/yay.git .BUILDS/yay && pushd .BUILDS/yay && makepkg -si --noconfirm
 
-popd
+if ![ -d "~/.BUILDS" ]; then
+    mkdir ~/.BUILDS
+fi
+
+if ![ -d "~/.BUILDS/yay" ]; then
+    git clone https://aur.archlinux.org/yay.git .BUILDS/yay
+    pushd .BUILDS/yay && makepkg -si --noconfirm
+
+    popd
+fi
 
 # Install all of the PACKAGES
-yay -S ${PACKAGES[@]} --noconfirm
+#yay -S ${PACKAGES[@]} --noconfirm
 
 # Install rust
 echo "###############################################"
@@ -111,7 +124,9 @@ echo "Installing Rust"
 echo "###############################################"
 
 pushd ~/.BUILDS
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -- -q -y
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+source "$HOME/.cargo/env"
 
 rustup install stable
 rustup default stable
@@ -125,23 +140,19 @@ echo "###############################################"
 
 export PYTHON_VERSION=$(python -V)
 
-[[ ! -d ".BUILDS/python" ]] && pushd ~/.BUILDS && wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz
-tar -xf Python*.tar.xz
-pushd Python-3.12.0
+pushd ~/.BUILDS
 
-./configure --prefix=/home/${USER}/.local/ --exec-prefix=/home/${USER}/.local/ --enable-optimizations --bindir=/home/${USER}/.local/ --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6 --oldincludedir=/home/${USER}/.local/ --enable-ipv6
+if [[ ! -d "python" ]]; then
+    
+    wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz
+    tar -xf Python*.tar.xz
+    pushd Python-3.12.0
 
-make -j altinstall
+    ./configure --prefix=/home/${USER}/.local/ --exec-prefix=/home/${USER}/.local/ --enable-optimizations --bindir=/home/${USER}/.local/ --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6 --oldincludedir=/home/${USER}/.local/ --enable-ipv6
 
+    make -j install
+
+    
+    popd
+fi
 popd
-popd
-
-
-
-
-
-
-
-
-
-
