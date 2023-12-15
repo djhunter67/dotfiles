@@ -62,6 +62,7 @@
 	company
 	prettier
 	flymake-ruff
+	ivy-posframe
 	)
       )
 

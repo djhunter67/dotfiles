@@ -63,6 +63,9 @@ pushd ~/Documents
 
 popd  # go to  home directory
 
+# Make the .zsh directory if it doesn't exist
+![[ -d "~/.zsh" ]] && mkdir .zsh
+
 # Make the development directory
 ![[ -d "dev" ]] && mkdir dev
 
@@ -76,13 +79,17 @@ popd  # go to  home directory
 echo "###############################################"
 echo "Place the key onto GitHub"
 echo "###############################################"
-cat ~/.ssh/id_ed25519_base_key.pub
-
+more ~/.ssh/id_ed25519_base_key.pub
 
 # When command closes clone dotfiles repo
 sudo pacman -S git base-devel --noconfirm
-# ![[ -d "dotfiles"  ]] && git clone git@github.com:djhunter67/dotfiles.git
 
+# Install the zsh autocomplete
+pushd ~/.zsh
+git clone  git@github.com:zsh-users/zsh-autosuggestions.git
+popd
+
+# Install the straight installation manager
 ![[ -d "~/.emacs.d/straight.el" ]] && pushd ~/.emacs.d/ && git clone git@github.com:radian-software/straight.el.git
  
 

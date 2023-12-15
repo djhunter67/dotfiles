@@ -333,7 +333,7 @@ source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # Lines configured by zsh-newuser-install
 setopt beep extendedglob nomatch
-source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /home/djhunter67/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
