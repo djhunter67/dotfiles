@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Define colors for different log types
+
+ERROR_COLOR='\033[0;31m'       # Red
+WARNING_COLOR='\033[0;33m'     # Yellow
+CRITICAL_COLOR='\033[1;31m'    # Bold Red
+INFO_COLOR='\033[0;32m'        # Green
+DEBUG_COLOR='\033[0;34m'       # Blue
+RESET_COLOR='\033[0m'          # Reset to default color
+
+# Function to colorize the log based on the log type
+colorize_log() {
+    while IFS= read -r line; do
+        log_type=$(echo "$line" | awk -F' ' '{print $NF}')
+        case "$log_type" in
+            "ERROR")
+                echo -e "${ERROR_COLOR}$line${RESET_COLOR}"
+                ;;
+            "WARNING")
+                echo -e "${WARNING_COLOR}$line${RESET_COLOR}"
+                ;;
+            "INFO")
+                echo -e "${INFO_COLOR}$line${RESET_COLOR}"
+                ;;
+            "DEBUG")
+                echo -e "${DEBUG_COLOR}$line${RESET_COLOR}"
+                ;;
+            *)
+                # Print the line as is if log type is not recognized
+                echo "$line"
+                ;;
+        esac
+    done
+}
+
+if [ -z "$1" ]; then
+    echo "Usage: bash colorized_log_tail.sh <log_file_path>"
+    exit 1
+fi
+
+LOG_FILE="$1"
+
+# Tail the log file and colorize the output
+tail -n 50 -f "$LOG_FILE" | colorize_log

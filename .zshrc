@@ -5,10 +5,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-
-setopt SHARE_HISTORY
-setopt HIST_IGNORE_ALL_DUPS
-unsetopt HIST_IGNORE_DUPS
 #!/bin/zsh
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
@@ -34,18 +30,25 @@ plugins=(
     command-not-found
     zsh-completions
     zsh-autosuggestions
-    zsh-syntax-highlighting)
+    zsh-syntax-highlighting
+)
 ###########################
 
 # precmd_vcs_info() { vcs_info }
-# precmd_functions += ( precmd_vcs_info )
+# precmd_functions+=( precmd_vcs_info )
 setopt prompt_subst
-# RPROMPT='${vcs_info_msg_0_}'
-# PROMPT='${vcs_info_msg_0_}%# '
+RPROMPT='${vcs_info_msg_0_}'
+PROMPT='${vcs_info_msg_0_}%# '
 zstyle ':vcs_info:git:*' formats '%b'
 #fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=5'
 
+# Load Git completion
+zstyle ':completion:*:*:git:*' script ~/.zsh/git-completion.bash
+fpath=(~/.zsh $fpath)
+
+autoload -Uz compinit && compinit
 
 # Make any executable placed in ~/bin discoverable on $PATH
 if [ -d "$HOME/bin" ]; then
@@ -57,12 +60,35 @@ if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# setopt INC_APPEND_HISTORY
-# export HISTTIMEFORMAT="[%F %T] "
+export KITTY_CONFIG_DIRECTORY="$HOME/.config/kitty/kitty.conf"
+
+# Increase Bash history size. Allow 32³ entries; the default is 500.
+#
+HISTFILE=~/.zsh_history
+HISTSIZE=32768
+SAVEHIST=30000
+HISTFILESIZE="${HISTSIZE}"
+setopt APPENDHISTORY
+
+# Ignore duplicates, ls without options and builtin commands
+#
+HISTCONTROL=ignoreboth
+HISTIGNORE="&:ls:[bf]g:exit"
+
+# Modify history file
+#
+setopt INC_APPEND_HISTORY
+HISTTIMEFORMAT="[%F %T] "
+
 # Add timestampt to command
-# setopt EXTENDED_HISTORY
+#
+setopt EXTENDED_HISTORY
+
 # No Duplicates
-# setopt HIST_IGNORE_ALL_DUPS
+#
+setopt HIST_IGNORE_ALL_DUPS
+setopt SHARE_HISTORY
+unsetopt HIST_IGNORE_DUPS
 
 # Color for manpages
 #
@@ -74,26 +100,17 @@ export LESS_TERMCAP_so=$'\E[01;44;33m'
 export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;32m'
 
-# Increase Bash history size. Allow 32³ entries; the default is 500.
-#
-export HISTSIZE='32768'
-export HISTFILESIZE="${HISTSIZE}"
-
-# Ignore duplicates, ls without options and builtin commands
-#
-export HISTCONTROL=ignoreboth
-export HISTIGNORE="&:ls:[bf]g:exit"
 
 # Make emacs the default editor.
 #
 export EDITOR='emacs'
 
+# Add the Rust binaries
+#
+export PATH="$PATH:/home/djhunter67/.cargo/bin"
+
 # Change caps lock to left CTRL
 #xmodmap ~/.Xmodmap
-
-# Make Python use UTF-8 encoding for output to stdin, stdout, and stderr.
-#
-export PYTHONIOENCODING='UTF-8'
 
 # Make Python use UTF-8 encoding for output to stdin, stdout, and stderr.
 #
@@ -111,16 +128,21 @@ export LESS_TERMCAP_md="${yellow}"
 # Golang Library and dependancies
 export PATH=$PATH:/usr/local/go/bin
 
+# Replace Emacs hash table deserialization method.
+export LSP_USE_PLISTS=true
+
 #######################################
 # User specific aliases
 #######################################
 
 # alias python='/usr/local/bin/python3.10'
 # alias pip='/usr/local/bin/python3.10 -m pip'
-[ "$TERM" = "xterm-kitty" ] && alias ssh='kitty +kitten ssh'
+# [ "$TERM" = "xterm-kitty" ] && alias ssh='kitty +kitten ssh'
+export TERM=xterm
+alias Ripley='ssh root@192.168.110.24'
 alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
-alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; pkill -f gphoto2;  gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"
+alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; pkill -f gphoto2 && gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
@@ -166,13 +188,13 @@ alias paths='echo -e ${PATH//:/\\n}'
 #
 alias speedtest="wget -O /dev/null http://speed.transip.nl/100mb.bin"
 
-# Clear DELUGE
-#
-alias DELUGE='rm -rf ~/Downloads/DELUGE/*'
-
 # Make CAPS LOCK into CTRL
 #
 #xmodmap ~/.Xmodmap
+
+# Clear DELUGE
+#
+# alias DELUGE='rm -rf ~/Downloads/DELUGE/*'
 
 ######################################
 # User defined functions
@@ -232,8 +254,8 @@ function r_sync() {
     rsync -Paurvh --stats --progress $1 $2
 }
 
-# `venv` is a function that will initial a python virtualenv virtual envrionment with the name 'venv'
-# The virtual environment will be activated and pip updated.  Basic directory structure will be set up.
+# `venv` is a function that will initialize a python virtualenv virtual envrionment with the name 'venv'
+# The virtual environment will be activated and update pip.  Basic directory structure will be set up.
 # The venv function will suppress all output except the last line; git init.
 function venv() {
 
@@ -259,13 +281,18 @@ This project, henceforth, will recongnize [semantic versioning](https://semver.o
 											       
 Here we write upgrade and change notes.						       
 											       
-⭐ MAJOR version when you make incompatible API changes,				       
+⭐              MAJOR version when you make incompatible API changes,				       
 											       
 ✴️ MINOR version when you add functionality in a backwards compatible manner		       
 											       
 ✳️ PATCH version when you make backwards compatible bug fixes.				       
 											       
---------------------------------------						       
+--------------------------------------
+
+✳️[0.0.1] - 2023 JUNE 25
+
+- Automatic initialization of the project structure 
+
 EOT
 
     [[ -f ~/.gitignore_global ]] && cat /home/djhunter67/.gitignore_global > .gitignore
@@ -281,7 +308,7 @@ This PR...
 ## Changes										       
 											       
 -											       
-## Screenshotsg10									       
+## Screenshots10									       
 											       
 (prefer animated gif)									       
 											       
@@ -298,18 +325,16 @@ This PR...
 EOT
     popd
     git add . &>/dev/null &&
-        git cm "init git" &>/dev/null &&
+        git cm "init: initializing the project" &>/dev/null &&
         tre -L 3 -I venv
 }
 
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # Lines configured by zsh-newuser-install
-HISTFILE=~/.zsh_history
-HISTSIZE=4294967296
-SAVEHIST=4294967296
 setopt beep extendedglob nomatch
-source /home/djhunter67/.BUILDS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /home/djhunter67/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+unset ZSH_AUTOSUGGEST_USE_ASYNC
