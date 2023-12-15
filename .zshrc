@@ -277,7 +277,7 @@ All notable changes will be appended here.
 											       
 This project, henceforth, will recongnize [semantic versioning](https://semver.org/).	       
 											       
-## [⭐.✴️.✳️] - YEAR MONTH DAY								       
+[⭐.✴️.✳️] - YEAR MONTH DAY								       
 											       
 Here we write upgrade and change notes.						       
 											       
