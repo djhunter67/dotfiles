@@ -162,15 +162,19 @@ echo "###############################################"
 echo "Installing Rust"
 echo "###############################################"
 
-pushd ~/.BUILDS
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-source "$HOME/.cargo/env"
+# if rustup is not a valid command then install rustup
+if ! command -v rustup &> /dev/null; then
+    pushd ~/.BUILDS
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-rustup install stable
-rustup default stable
+    source "$HOME/.cargo/env"
 
-popd
+    rustup install stable
+    rustup default stable
+
+    popd
+fi
 
 # Install the latest stable version of python from source
 echo "###############################################"
