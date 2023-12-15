@@ -55,6 +55,7 @@ PACKAGES=(
     "perf"
     "pls"
     "awesome-terminal-fonts"
+    "ttf-firacode-nerd"
 )
 
 # Make the work directory
