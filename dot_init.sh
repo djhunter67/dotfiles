@@ -19,7 +19,7 @@ set -e
 
 # packages to install
 PACKAGES=(
-    "wakatime-cli"
+    "wakatime"
     "v4l2loopback-dkms"
     "gphoto2"
     "ffmpeg"
@@ -31,7 +31,7 @@ PACKAGES=(
     "webkit2gtk"
     "gtk3"
     "neofetch"
-    "texlive"
+    # "texlive"
     "hunspell-en_us"
     "arduino"
     "zsh"
@@ -56,39 +56,57 @@ PACKAGES=(
     "pls"
     "awesome-terminal-fonts"
     "ttf-firacode-nerd"
+  "kitty"
 )
 
+# Install firefox
+echo "###############################################"
+echo "Installing Firefox"
+echo "###############################################"
+sudo pacman -S firefox --noconfirm
+
 # Make the work directory
+echo "###############################################"
+echo "Making the work directory"
+echo "###############################################"
 pushd ~/Documents 
 ![[  -d "work_worK_woRk_wOrk_Work_WORK" ]] && mkdir work_worK_woRk_wOrk_Work_WORK;
 
 popd  # go to  home directory
 
 # Make the .zsh directory if it doesn't exist
+echo "###############################################"
+echo "Making the .zsh directory"
+echo "###############################################"
 ![[ -d "~/.zsh" ]] && mkdir .zsh
 
 # Make the development directory
+echo "###############################################"
+echo "Making the dev directory"
+echo "###############################################"
 ![[ -d "dev" ]] && mkdir dev
 
 # Create the .BUILD directory
+echo "###############################################"
+echo "Making the .BUILD directory"
+echo "###############################################"
 ![[ -d ".BUILDS" ]] && mkdir .BUILDS
 
 # Create ssh key to pull the dotfiles repo from github
+echo "###############################################"
+echo "Creating ssh key"
+echo "###############################################"
 ![[ -f ".ssh/id_ed22519_base_key.pub"  ]] && ssh-keygen -t ed25519 -N "" -f /home/${USER}/.ssh/id_ed25519_base_key -q
-
-# Blocking command to show the pub key; Add keys to github repo(s)
-echo "###############################################"
-echo "Place the key onto GitHub"
-echo "###############################################"
-more ~/.ssh/id_ed25519_base_key.pub
 
 # When command closes clone dotfiles repo
 sudo pacman -S git base-devel --noconfirm
 
 # Install the zsh autocomplete
-pushd ~/.zsh
-git clone  git@github.com:zsh-users/zsh-autosuggestions.git
-popd
+if ![ -d "~/.zsh/zsh-autosuggestions" ]; then
+    pushd ~/.zsh
+    git clone  git@github.com:zsh-users/zsh-autosuggestions.git
+    popd
+fi
 
 # Install the straight installation manager
 ![[ -d "~/.emacs.d/straight.el" ]] && pushd ~/.emacs.d/ && git clone git@github.com:radian-software/straight.el.git
@@ -122,9 +140,22 @@ if ![ -d "~/.BUILDS/yay" ]; then
 
     popd
 fi
+# Echo the packages to install
+echo "###############################################"
+echo "Installing the following packages"
+echo "###############################################"
+for i in "${PACKAGES[@]}"
+do
+	echo "$i"
+done
 
-# Install all of the PACKAGES
-yay -S ${PACKAGES[@]} --noconfirm
+# Check if the packages are installed and if not install them
+for i in "${PACKAGES[@]}"
+do
+	if ! pacman -Qi "$i" &> /dev/null; then
+		yay -S "$i" --noconfirm
+	fi
+done
 
 # Install rust
 echo "###############################################"
@@ -150,17 +181,22 @@ export PYTHON_VERSION=$(python -V)
 
 pushd ~/.BUILDS
 
-if [[ ! -d "python" ]]; then
+if [[ ! -d "Python-3.12.0" ]]; then
     
     wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz
     tar -xf Python*.tar.xz
     pushd Python-3.12.0
 
-    ./configure --prefix=/home/${USER}/.local/ --exec-prefix=/home/${USER}/.local/ --enable-optimizations --bindir=/home/${USER}/.local/ --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6 --oldincludedir=/home/${USER}/.local/ --enable-ipv6
+    ./configure --enable-optimizations --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6  --enable-ipv6
 
     make -j install
-
-    
     popd
 fi
 popd
+
+# Blocking command to show the pub key; Add keys to github repo(s)
+echo "###############################################"
+echo "Place the key onto GitHub"
+echo "###############################################"
+less ~/.ssh/id_ed25519_base_key.pub
+
