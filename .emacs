@@ -207,6 +207,11 @@
   :config
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
+;; Zig Mode
+(unless (version< emacs-version "24")
+  (autoload 'zig-mode "zig-mode" nil t)
+  (add-to-list 'auto-mode-alist '("\\.zig\\'" . zig-mode)))
+
 ;;Company mode 
 (use-package company
   :ensure
@@ -322,6 +327,19 @@
 ;; Define custom keybinding ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Code folding
+(global-set-key (kbd "<f5>") 'set-selective-display-dlw)
+
+(defun set-selective-display-dlw (&optional level)
+"Fold text indented same of more than the cursor.
+If level is set, set the indent level to LEVEL.
+If 'selective-display' is already set to LEVEL, clicking
+F5 again will unset 'selective-display' by setting it to 0."
+  (interactive "P")
+  (if (eq selective-display (1+ (current-column)))
+      (set-selective-display 0)
+    (set-selective-display (or level (1+ (current-column))))))
+
 ;; Set C-x o to C-{ to switch cursor to other windows
 (global-unset-key (kbd "C-x o"))
 (global-set-key (kbd "C-{") 'other-window)
@@ -394,6 +412,12 @@
 ;; Make shebang (#!) file executable when saved
 (add-hook 'after-save-hook
 	  #'executable-make-buffer-file-executable-if-script-p)
+
+;; Enable hunspell
+(setq ispell-program-name "hunspell")
+(setq ispell-local-dictionary "de_DE")
+(setq ispell-local-dictionary-alist
+      '(("de_DE" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil nil nil utf-8)))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; HTML variables ;;
