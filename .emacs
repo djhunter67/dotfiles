@@ -63,6 +63,8 @@
 	prettier
 	flymake-ruff
 	ivy-posframe
+	origami
+	lsp-origami
 	)
       )
 
@@ -1243,7 +1245,13 @@ cleared, make sure the overlay doesn't come back too soon."
       (format "<!DOCTYPE html><html><title>Impatient Markdown</title><xmp theme=\"united\" style=\"display:none;\"> %s  </xmp><script src=\"http://ndossougbe.github.io/strapdown/dist/strapdown.js\"></script></html>" (buffer-substring-no-properties (point-min) (point-max))))
 	   (current-buffer)))
 
-
+;; SQL lsp
+;; (add-hook 'sql-mode-hook 'lsp)
+;; (setq lsp-sqls-workspace-config-path nil)
+;; (setq lsp-sqls-connections
+;;     '(((driver . "mysql") (dataSourceName . "yyoncho:local@tcp(localhost:3306)/foo"))
+;;       ((driver . "mssql") (dataSourceName . "Server=localhost;Database=sammy;User Id=yyoncho;Password=hunter2;"))
+;;       ((driver . "postgresql") (dataSourceName . "host=127.0.0.1 port=5432 user=postgres password="" dbname=""  sslmode=disable"))))
 
 
 ;; Save emacs auto configs to a seperate file then load it.
