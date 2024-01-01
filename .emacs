@@ -73,6 +73,10 @@
  (unless (package-installed-p package)
    (package-install package)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;  Copilot  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Install straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -205,50 +209,9 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (advice-add 'keyboard-quit :before #'cvh/copilot-quit)
 
-
-;; (setq treesit-language-source-alist
-;;    '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-;;      (cmake "https://github.com/uyha/tree-sitter-cmake")
-;;      (css "https://github.com/tree-sitter/tree-sitter-css")
-;;      (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-;;      (go "https://github.com/tree-sitter/tree-sitter-go")
-;;      (html "https://github.com/tree-sitter/tree-sitter-html")
-;;      (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-;;      (json "https://github.com/tree-sitter/tree-sitter-json")
-;;      (make "https://github.com/alemuller/tree-sitter-make")
-;;      (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-;;      (python "https://github.com/tree-sitter/tree-sitter-python")
-;;      (toml "https://github.com/tree-sitter/tree-sitter-toml")
-;;      (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-;;      (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-;;      ;; (rust "https://github.com/tree-sitter/tree-sitter-rust" "master" "rust/src")
-;;      (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-
-;; (setq major-mode-remap-alist
-;;  '((yaml-mode . yaml-ts-mode)
-;;    (bash-mode . bash-ts-mode)
-;;    (js2-mode . js-ts-mode)
-;;    (typescript-mode . typescript-ts-mode)
-;;    (json-mode . json-ts-mode)
-;;    (css-mode . css-ts-mode)
-;;    (python-mode . python-ts-mode)))
-
-
-;; Eval new buffers to immediately update lsp
-;; (let* ((auto-insert nil) ; Disable auto insertion
-;;        (coding-system-for-read
-;; 	(or coding-system-for-read
-;; 	    (cdr (assq 'buffer-file-coding-system
-;; 		       desktop-buffer-locals))))
-;;        (buf (find-file-noselect buffer-filename :nowarn)))
-;;   (condition-case nil
-;;       (switch-to-buffer buf)
-;;     (error (pop-to-buffer buf)))
-;;   (and (not (eq major-mode desktop-buffer-major-mode))
-;;        (functionp desktop-buffer-major-mode)
-;;        (funcall desktop-buffer-major-mode)))
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Copilot  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Silence compiler warnings as they are disruptive
 (setq native-comp-async-report-warnings-errors nil)
@@ -273,6 +236,17 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Setup
 ;;====================================
+
+
+;; Install origami for code folding
+(use-package origami
+  :ensure t
+  :config
+  (global-origami-mode)
+  (define-key origami-mode-map (kbd "C-c f") 'origami-recursively-toggle-node)
+  (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes))
+
+
 
 ;; Get and enable Elpy
 (use-package elpy
