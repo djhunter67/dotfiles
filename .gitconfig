@@ -1,7 +1,7 @@
 [user]
 	name = Christerpher Hunter
 	email = djhunter67@gmail.com
-	signingkey = 17C4B5B4665F03C2DE49E8D19603899D803F43A2
+	signingkey = 5F89329FAE79A6AB
 [credential]
 	helper = cache --timeout=10800000
 [color]

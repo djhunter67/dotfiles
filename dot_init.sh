@@ -55,8 +55,9 @@ PACKAGES=(
     "perf"
     "pls"
     "awesome-terminal-fonts"
-    "ttf-firacode-nerd"
-  "kitty"
+    "ttf-firacode"
+    "kitty"
+    "rust-analyzer"
 )
 
 # Install firefox
