@@ -94,20 +94,8 @@
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t)
 ;; you can utilize :map :hook and :config to customize copilot
-		
-;; Setup Copilot
-;; (require 'cl)
-;; (let ((pkg-list '(use-package
-		          ;; s
-		          ;; dash
-		          ;; editorconfig
-                  ;; company)))
-  ;; (package-initialize)
-  ;; (when-let ((to-install (map-filter (lambda (pkg _) (not (package-installed-p pkg))) pkg-list)))
-    ;; (package-refresh-contents)
-    ;; (mapc (lambda (pkg) (package-install pkg)) pkg-list)))
 
-
+;; Enable copilot globally
 (use-package copilot
   :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
   ;; don't show in mode line
@@ -209,7 +197,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (advice-add 'keyboard-quit :before #'cvh/copilot-quit)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Copilot  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Key Bindings  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -237,6 +225,35 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Setup
 ;;====================================
 
+;; Solidity support
+(setq solidity-solc-path "/home/djhunter67/.BUILDS/solidity-0.8.23/build/solc/solc")
+;;TODO
+;; install solium or ethlint
+
+(require 'solidity-mode)
+(setq solidity-comment-style 'slash) ;; // comments
+(define-key solidity-mode-map (kbd "C-c C-p") 'solidity-estimate-gas-at-point)
+
+;; Solidity flycheck
+(require 'solidity-flycheck)
+(setq solidity-flycheck-solc-checker-active t)
+;; TODO
+;; install solium or ethlint for flycheck
+
+;; Solidity std contracts checker
+(setq flycheck-solidity-solc-addstd-contracts t)
+;; TODO
+;; Solium or Ethlint RC file
+
+;; Solidity company
+(require 'company-solidity)
+;; Company can use local variables
+(add-hook 'solidity-mode-hook
+	(lambda ()
+	(set (make-local-variable 'company-backends)
+		(append '((company-solidity company-capf company-dabbrev-code))
+			company-backends))))
+
 
 ;; Install origami for code folding
 (use-package origami
@@ -257,7 +274,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (require 'flymake-ruff)
 (add-hook 'python-mode-hook #'flymake-ruff-load)
-
 ;; Enable flycheck
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
@@ -316,6 +332,14 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
+;; Setup eglot for rust
+(add-hook 'rust-mode-hook 'eglot-ensure)
+(add-hook 'rust-mode-hook 'flycheck-mode)
+(add-hook 'rust-mode-hook 'flymake-mode)
+(add-hook 'rust-mode-hook 'company-mode)
+(add-hook 'rust-mode-hook 'origami-mode)
+(add-hook 'rust-mode-hook 'yas-minor-mode)
+
 ;;Company mode 
 (use-package company
   :ensure
@@ -366,7 +390,7 @@ cleared, make sure the overlay doesn't come back too soon."
           (indent-for-tab-command)))))
 
 ;; inline inferred types
-(setq lsp-rust-analyzer-server-display-inlay-hints t)
+;; (setq lsp-rust-analyzer-server-display-inlay-hints t)
 
 (require 'multiple-cursors)
 
@@ -426,10 +450,9 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Disable the busted ass python-mypy checker
 (setq-default flycheck-disabled-checkers '(python-mypy))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Define custom keybinding ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;; Keybindings ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Set C-x o to C-{ to switch cursor to other windows
 (global-unset-key (kbd "C-x o"))
@@ -505,6 +528,14 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Make shebang (#!) file executable when saved
 (add-hook 'after-save-hook
 	  #'executable-make-buffer-file-executable-if-script-p)
+
+(global-unset-key (kbd "C-r"))  ;; Just in case
+;; Set swiper-thing-at-point to C-r
+(global-set-key (kbd "C-r") 'swiper-thing-at-point)
+
+;; Select the entire word at point using mc--mark-symbol-at-point
+(global-set-key (kbd "C-<return>") 'mc--mark-symbol-at-point)
+
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; HTML variables ;;
@@ -1085,7 +1116,28 @@ cleared, make sure the overlay doesn't come back too soon."
   (lsp-ui-sideline-show-hover t)
   (lsp-ui-doc-enable nil)
   (lsp-ui-doc-show))
-  
+
+(use-package treemacs
+  :ensure t
+  :bind ("<f5>" . treemacs)
+  :custom
+  (treemacs-is-never-other-window t)
+  :hook
+  (treemacs-mode . treemacs-project-follow-mode))
+
+(use-package solaire-mode
+  :ensure t
+  :hook (after-init . solaire-global-mode)
+  :config
+  (push '(treemacs-window-background-face . solaire-default-face) solaire-mode-remap-alist)
+  (push '(treemacs-hl-line-face . solaire-hl-line-face) solaire-mode-remap-alist))
+
+(use-package fill-function-arguments
+  :ensure t
+  :defer
+  :bind (:map prog-mode-map
+              ("M-q" . fill-function-arguments-dwim)))
+
 (use-package lsp-treemacs
   :commands (lsp-treemacs-errors-list)
   :after lsp)
@@ -1093,28 +1145,6 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package lsp-ivy
   :commands (lsp-ivy-workspace-symbol)
   :after lsp)
-
-;; Setup the rust LSP
-;; (use-package rustic
-;;   :ensure
-;;   :bind (:map rustic-mode-map
-;;               ("M-j" . lsp-ui-imenu)
-;;               ("M-?" . lsp-find-references)
-;;               ("C-c C-c l" . flycheck-list-errors)
-;;               ("C-c C-c a" . lsp-execute-code-action)
-;;               ("C-c C-c r" . lsp-rename)
-;;               ("C-c C-c q" . lsp-workspace-restart)
-;;               ("C-c C-c Q" . lsp-workspace-shutdown)
-;;               ("C-c C-c s" . lsp-rust-analyzer-status))
-;;   :config
-  ;; uncomment for less flashiness
-  ;; (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
-
-  ;; comment to disable rustfmt on save
-  ;; (setq rustic-format-on-save t)
-  ;; (add-hook 'rustic-mode-hook 'cvh/rustic-mode-hook))
 
 (defun cvh/rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to

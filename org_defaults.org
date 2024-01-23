@@ -1,0 +1,22 @@
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [article, 12pt, letterpaper]
+#+LATEX_HEADER: \usepackage[top=0.5in, bottom=1.15in, left=0.5in, right=0.75in, includefoot]{geometry}
+#+OPTIONS: num:nil title:nil toc:nil timestamp:nil date:nil \n:t
+#+LATEX_HEADER: \usepackage{lmodern} % Ensure the correct font
+#+LATEX_HEADER: \usepackage[AUTO]{inputenc} 
+#+LATEX_HEADER: \usepackage{graphicx} % Enable graphics
+#+LATEX_HEADER: \usepackage{amsmath, amsthm, amssymb}
+#+LATEX_HEADER: \usepackage[table, xcdraw]{xcolor}
+#+LATEX_HEADER: \usepackage{fancyhdr}
+#+LATEX_HEADER: \usepackage{lastpage}
+#+LATEX_HEADER: \pagestyle{fancyplain}
+#+LATEX_HEADER: \setlength{\headheight}{57.391pt}
+#+LATEX_HEADER: \chead{}
+#+LATEX_HEADER: \rhead{}
+#+LATEX_HEADER: \lhead{\includegraphics[width=7cm]{/home/djhunter67/Pictures/cellantenna_logo.png}}
+#+LATEX_HEADER: \renewcommand{\footrulewidth}{0.4pt}
+#+LATEX_HEADER: \cfoot{}
+#+LATEX_HEADER: \lfoot{CellAntenna Corporation, cellantenna.com}
+#+LATEX_HEADER: \rfoot{Page \thepage\ of \pageref{LastPage}}
+#+LATEX_HEADER: \hypersetup{colorlinks=true, linkcolor=blue, filecolor=magenta, urlcolor=cyan}
+

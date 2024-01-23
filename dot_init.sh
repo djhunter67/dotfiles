@@ -58,6 +58,17 @@ PACKAGES=(
     "ttf-firacode"
     "kitty"
     "rust-analyzer"
+    "texlive-fontsrecommended"
+    "pandoc"
+    "texlive-plaingeneric"
+    "texlive-latexextra"
+    "texlive-bin-extra"
+    "texlive-latex-extra"
+    "texlive-luatex"
+    "texlive-latex"
+    "pdflatex"
+    "libreoffice-still"
+    "hunspell"
 )
 
 # Install firefox
