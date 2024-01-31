@@ -99,11 +99,9 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;  Copilot  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Co-Pilot ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Install straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -124,137 +122,10 @@
 ;; Append to emacs PATH
 (setq user-emacs-directory "~/.emacs.d")
 
-;; Don't pop up UI dialogs
-(setq use-dialog-box nil)
-
-;; Disable init popup
-(setq inhibit-startup-message t)
-
-;; Revert buffers when underlying file has changed
-(global-auto-revert-mode 1)
-
-;; Revert Dired buffer to live reload
-(setq global-auto-revert-non-file-buffers t)
-
-;; You will most likely need to adjust this font size for your system!
-(defvar cvh/default-font-size 120)
-(defvar cvh/default-variable-font-size 120)
-
-(require 'package)
-
-;;====================================
-;; Setup
-;;====================================
-
-;; Get and enable Elpy
-(use-package elpy
-  :ensure t
-  :init
-  (elpy-enable))
-
-;; Enable flycheck
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
-
-;; Enable yaml mode for .yaml files and .yml files
-(require 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
-(add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
-
-;; Enable the Melpa repo
-
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-
-;; Enable wakatime
-(global-wakatime-mode)
-
-;; Enable autopep8
-;; (require 'py-autopep8)
-;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-
-;; Rust IDE feature
-(use-package lsp-mode
-  :ensure
-  :commands lsp
-  :custom
-  ;; what to use when checking on-save. "check" is default, I prefer clippy
-  (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
-  (lsp-idle-delay 0.3)
-  ;; enable / disable the hints as you prefer:
-  (lsp-rust-analyzer-server-display-inlay-hints t)
-  (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
-  (lsp-rust-analyzer-display-chaining-hints t)
-  (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
-  (lsp-rust-analyzer-display-closure-return-type-hints t)
-  (lsp-rust-analyzer-display-parameter-hints t)
-  (lsp-rust-analyzer-display-reborrow-hints t)
-  :config
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-;; Company mode for Rust
-(use-package flycheck :ensure)
-(use-package company
-  :ensure
-  :custom
-  (company-idle-delay 0.3) ;; how long to wait until popup
-  ;; (company-begin-commands nil) ;; uncomment to disable popup
-  :bind
-  (:map company-active-map
-	("C-n". company-select-next)
-	("C-p". company-select-previous)
-	("M-<". company-select-first)
-	("M->". company-select-last)))
-
-(use-package yasnippet
-  :ensure
-  :config
-  (yas-reload-all)
-  (add-hook 'prog-mode-hook 'yas-minor-mode)
-  (add-hook 'text-mode-hook 'yas-minor-mode))
-
-(defun company-yasnippet-or-completion ()
-  (interactive)
-  (or (do-yas-expand)
-      (company-complete-common)))
-
-(defun check-expansion ()
-  (save-excursion
-    (if (looking-at "\\_>") t
-      (backward-char 1)
-      (if (looking-at "\\.") t
-	(backward-char 1)
-	(if (looking-at "::") t nil)))))
-
-(defun do-yas-expand ()
-  (let ((yas/fallback-behavior 'return-nil))
-    (yas/expand)))
-
-(defun tab-indent-or-complete ()
-  (interactive)
-  (if (minibufferp)
-      (minibuffer-complete)
-    (if (or (not yas/minor-mode)
-	    (null (do-yas-expand)))
-	(if (check-expansion)
-	    (company-complete-common)
-	  (indent-for-tab-command)))))
-
-;; inline inferred types
-(setq lsp-rust-analyzer-server-display-inlay-hints t)
-
-(use-package lsp-ui
-  :ensure
-  :commands lsp-ui-mode
-  :custom
-  (lsp-ui-peek-always-show t)
-  (lsp-ui-sideline-show-hover t)
-  (lsp-ui-doc-enable nil))
+(use-package copilot
+  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+  :ensure t)
+;; you can utilize :map :hook and :config to customize copilot
 
 
 
@@ -441,6 +312,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (advice-add 'keyboard-quit :before #'cvh/copilot-quit)
 
+
 ;; Silence compiler warnings as they are disruptive
 (setq native-comp-async-report-warnings-errors nil)
 
@@ -474,8 +346,82 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (require 'package)
 
-;; Setup
-;;====================================
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; Setup ;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; `M-x combobulate' (default: `C-c o o') to start using Combobulate
+(use-package treesit-auto
+  :preface
+  (defun mp-setup-install-grammars ()
+    "Install Tree-sitter grammars if they are absent."
+    (interactive)
+    (dolist (grammar
+             '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+	       (cmake "https://github.com/uyha/tree-sitter-cmake")
+	       (css "https://github.com/tree-sitter/tree-sitter-css")
+	       (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+	       (go "https://github.com/tree-sitter/tree-sitter-go")
+	       (html "https://github.com/tree-sitter/tree-sitter-html")
+	       (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+	       (json "https://github.com/tree-sitter/tree-sitter-json")
+	       (make "https://github.com/alemuller/tree-sitter-make")
+	       (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+	       (python "https://github.com/tree-sitter/tree-sitter-python")
+	       (rust "https://github.com/tree-sitter/tree-sitter-rust")
+	       (toml "https://github.com/tree-sitter/tree-sitter-toml")
+	       (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+	       (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+	       (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+      (add-to-list 'treesit-language-source-alist grammar)
+      ;; Only install `grammar' if we don't already have it
+      ;; installed. However, if you want to *update* a grammar then
+      ;; this obviously prevents that from happening.
+      (unless (treesit-language-available-p (car grammar))
+        (treesit-install-language-grammar (car grammar)))))
+
+  ;; Optional, but recommended. Tree-sitter enabled major modes are
+  ;; distinct from their ordinary counterparts.
+  ;;
+  ;; You can remap major modes with `major-mode-remap-alist'. Note
+  ;; that this does *not* extend to hooks! Make sure you migrate them
+  ;; also
+  (dolist (mapping '((python-mode . python-ts-mode)
+                     (css-mode . css-ts-mode)
+                     (typescript-mode . tsx-ts-mode)
+                     (json-mode . json-ts-mode)
+                     (js-mode . js-ts-mode)
+                     (css-mode . css-ts-mode)
+		     (rust-mode . rust-ts-mode)
+                     (yaml-mode . yaml-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping))
+
+  :config
+  (mp-setup-install-grammars)
+  ;; Do not forget to customize Combobulate to your liking:
+  ;;
+  ;;  M-x customize-group RET combobulate RET
+  ;;
+  (use-package combobulate
+    :preface
+    ;; You can customize Combobulate's key prefix here.
+    ;; Note that you may have to restart Emacs for this to take effect!
+    (setq combobulate-key-prefix "C-c o")
+
+    ;; Optional, but recommended.
+    ;;
+    ;; You can manually enable Combobulate with `M-x
+    ;; combobulate-mode'.
+    :hook ((python-ts-mode . combobulate-mode)
+           (js-ts-mode . combobulate-mode)
+           (css-ts-mode . combobulate-mode)
+           (yaml-ts-mode . combobulate-mode)
+           (json-ts-mode . combobulate-mode)
+           (typescript-ts-mode . combobulate-mode)
+           (tsx-ts-mode . combobulate-mode))
+    ;; Amend this to the directory where you keep Combobulate's source
+    ;; code.
+    :load-path ("path-to-git-checkout-of-combobulate")))
 
 ;; Tree-sitter for syntax highlighting
 ;; (use-package treesit-auto
@@ -529,7 +475,8 @@ cleared, make sure the overlay doesn't come back too soon."
   (define-key origami-mode-map (kbd "C-c u") 'origami-undo))
 
 (require 'flymake-ruff)
-(add-hook 'python-mode-hook #'flymake-ruff-load)
+(add-hook 'python-ts-mode-hook #'flymake-ruff-load)
+
 ;; Enable flycheck
 ;; (when (require 'flycheck nil t)
 ;;   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
@@ -835,6 +782,42 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Disable the busted ass python-mypy checker
 (setq-default flycheck-disabled-checkers '(python-mypy))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define custom keybinding ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Select the entire word under the cursor
+(global-unset-key (kbd "C-<return>"))
+(global-set-key (kbd "C-<return>") 'mc--mark-symbol-at-point)
+
+;; Set C-x o to C-{ to switch cursor to other windows
+(global-unset-key (kbd "C-x o"))
+(global-set-key (kbd "C-{") 'previous-window-any-frame)
+(global-set-key (kbd "C-}") 'next-window-any-frame)
+
+;; unset C-S-i globally
+(global-unset-key (kbd "C-S-i"))
+
+;; Set C+; to toggle comment entire line
+(global-set-key (kbd "C-;") 'comment-line)
+
+;; Set C-<tab> to company-complete for only python-mode
+(global-set-key (kbd "C-<tab>") 'company-complete)
+
+;; Keybind C-S-i to format-buffer in rust-mode
+(add-hook 'rust-ts-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") 'py-autopep8-buffer)
+	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
+
+;; unbind M-g M-n to go to flycheck next error
+(global-unset-key (kbd "M-g M-n"))
+(global-unset-key (kbd "M-g M-p"))
+(global-set-key (kbd "M-g M-n") 'flycheck-next-error)
+(global-set-key (kbd "M-g M-p") 'flycheck-previous-error)
+
+
 ;; Format Python code with autopep8
 ;; Autopep8 execute
 (setq py-autopep8-options '("--max-line-length=79"))
@@ -862,8 +845,19 @@ cleared, make sure the overlay doesn't come back too soon."
 	      (local-set-key (kbd "C-S-i") 'cvh/indent-buffer))
 	    t))
 
+;; Set C+; to comment entire line
+(global-set-key (kbd "C-;") 'comment-line)
 
-(require 'multiple-cursors)
+;; Set C-' to xref-find-references in python-mode only
+;; (global-set-key (kbd "C-'") 'xref-find-references)
+(add-hook 'python-ts-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-c C-a b") 'dap-breakpoint-toggle)
+	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
+
+;; Switch buffers fast
+(global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
+(global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
 
 ;; Enable hunspell
 (setq ispell-program-name "hunspell")
@@ -876,7 +870,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;;;;;;;;;;;;;;;;;;;
 
 ;; Enable LSP for HTML for HTML files
-(add-hook 'html-mode-hook #'lsp)
+(add-hook 'html-ts-mode-hook #'lsp)
 
 ;; A list of JSON file paths that define custom tags, properties and other HTML syntax constructs.
 (setq lsp-html-experimental-custom-data (list (expand-file-name "html-languageserver.json" user-emacs-directory)))
@@ -919,12 +913,12 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; (define-key python-mode-map (kbd "<f4>") 'cvh/my-format-python-text)))
 
 ;; In css and html mode keybind my-format-python-text to C-S-i
-(add-hook 'css-mode-hook
+(add-hook 'css-ts-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") 'cvh/my-indent-whole-buffer)
 	    )
 	  )
-(add-hook 'html-mode-hook
+(add-hook 'html-ts-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") 'cvh/my-indent-whole-buffer)
 	    )
@@ -1147,6 +1141,8 @@ there's a region, all lines that region covers will be duplicated."
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'cvh/org-babel-tangle-config)))
+(add-hook 'org-mode-hook (lambda () (delete '("\\.pdf\\'" . default) org-file-apps)
+			   (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
 
 (use-package org
   ;;:pin org
@@ -1656,27 +1652,8 @@ there's a region, all lines that region covers will be duplicated."
   (pyvenv-mode 1))
 
 (use-package lsp-java
-  :mode "\\.java\\'"
-  :hook (java-mode . lsp))
-
-;; Add a hook for javascript mode to enable company
-(add-hook 'js-mode-hook 'company-mode)
-(add-hook 'js-mode-hook 'flycheck-mode)
-(add-hook 'js-mode-hook 'prettier-js-mode)
-(add-hook 'js-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "C-S-i") 'prettier-js)))
-
-(with-eval-after-load 'js
-  (define-key js-mode-map (kbd "M-.") nil))
-
-
-(setq js-indent-level 2)
-
-;; Pretty JS code
-;; https://github.com/prettier/prettier-emacs
-(require 'prettier-js)
-(add-hook 'js2-mode-hook 'prettier-js-mode)
+:mode "\\.java\\'"
+:hook (java-ts-mode . lsp))
 
 (add-to-list 'auto-mode-alist
 	     '("\\.cpp\\'" . c++-mode))
@@ -1686,24 +1663,6 @@ there's a region, all lines that region covers will be duplicated."
   :hook (shell-mode . lsp-deferred)
   :config
   (setq lsp-bash-highlight-parsing-errors t))
-
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2))
-
-(use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
-
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
