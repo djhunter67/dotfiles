@@ -73,6 +73,9 @@
  (unless (package-installed-p package)
    (package-install package)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Co-Pilot ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Install straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -91,18 +94,6 @@
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t)
 ;; you can utilize :map :hook and :config to customize copilot
-		
-;; Setup Copilot
-;; (require 'cl)
-;; (let ((pkg-list '(use-package
-		          ;; s
-		          ;; dash
-		          ;; editorconfig
-                  ;; company)))
-  ;; (package-initialize)
-  ;; (when-let ((to-install (map-filter (lambda (pkg _) (not (package-installed-p pkg))) pkg-list)))
-    ;; (package-refresh-contents)
-    ;; (mapc (lambda (pkg) (package-install pkg)) pkg-list)))
 
 
 (use-package copilot
@@ -207,50 +198,6 @@ cleared, make sure the overlay doesn't come back too soon."
 (advice-add 'keyboard-quit :before #'cvh/copilot-quit)
 
 
-;; (setq treesit-language-source-alist
-;;    '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-;;      (cmake "https://github.com/uyha/tree-sitter-cmake")
-;;      (css "https://github.com/tree-sitter/tree-sitter-css")
-;;      (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-;;      (go "https://github.com/tree-sitter/tree-sitter-go")
-;;      (html "https://github.com/tree-sitter/tree-sitter-html")
-;;      (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-;;      (json "https://github.com/tree-sitter/tree-sitter-json")
-;;      (make "https://github.com/alemuller/tree-sitter-make")
-;;      (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-;;      (python "https://github.com/tree-sitter/tree-sitter-python")
-;;      (toml "https://github.com/tree-sitter/tree-sitter-toml")
-;;      (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-;;      (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-;;      ;; (rust "https://github.com/tree-sitter/tree-sitter-rust" "master" "rust/src")
-;;      (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-
-;; (setq major-mode-remap-alist
-;;  '((yaml-mode . yaml-ts-mode)
-;;    (bash-mode . bash-ts-mode)
-;;    (js2-mode . js-ts-mode)
-;;    (typescript-mode . typescript-ts-mode)
-;;    (json-mode . json-ts-mode)
-;;    (css-mode . css-ts-mode)
-;;    (python-mode . python-ts-mode)))
-
-
-;; Eval new buffers to immediately update lsp
-;; (let* ((auto-insert nil) ; Disable auto insertion
-;;        (coding-system-for-read
-;; 	(or coding-system-for-read
-;; 	    (cdr (assq 'buffer-file-coding-system
-;; 		       desktop-buffer-locals))))
-;;        (buf (find-file-noselect buffer-filename :nowarn)))
-;;   (condition-case nil
-;;       (switch-to-buffer buf)
-;;     (error (pop-to-buffer buf)))
-;;   (and (not (eq major-mode desktop-buffer-major-mode))
-;;        (functionp desktop-buffer-major-mode)
-;;        (funcall desktop-buffer-major-mode)))
-
-
-
 ;; Silence compiler warnings as they are disruptive
 (setq native-comp-async-report-warnings-errors nil)
 
@@ -272,8 +219,82 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (require 'package)
 
-;; Setup
-;;====================================
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; Setup ;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; `M-x combobulate' (default: `C-c o o') to start using Combobulate
+(use-package treesit-auto
+  :preface
+  (defun mp-setup-install-grammars ()
+    "Install Tree-sitter grammars if they are absent."
+    (interactive)
+    (dolist (grammar
+             '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+	       (cmake "https://github.com/uyha/tree-sitter-cmake")
+	       (css "https://github.com/tree-sitter/tree-sitter-css")
+	       (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+	       (go "https://github.com/tree-sitter/tree-sitter-go")
+	       (html "https://github.com/tree-sitter/tree-sitter-html")
+	       (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+	       (json "https://github.com/tree-sitter/tree-sitter-json")
+	       (make "https://github.com/alemuller/tree-sitter-make")
+	       (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+	       (python "https://github.com/tree-sitter/tree-sitter-python")
+	       (rust "https://github.com/tree-sitter/tree-sitter-rust")
+	       (toml "https://github.com/tree-sitter/tree-sitter-toml")
+	       (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+	       (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+	       (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+      (add-to-list 'treesit-language-source-alist grammar)
+      ;; Only install `grammar' if we don't already have it
+      ;; installed. However, if you want to *update* a grammar then
+      ;; this obviously prevents that from happening.
+      (unless (treesit-language-available-p (car grammar))
+        (treesit-install-language-grammar (car grammar)))))
+
+  ;; Optional, but recommended. Tree-sitter enabled major modes are
+  ;; distinct from their ordinary counterparts.
+  ;;
+  ;; You can remap major modes with `major-mode-remap-alist'. Note
+  ;; that this does *not* extend to hooks! Make sure you migrate them
+  ;; also
+  (dolist (mapping '((python-mode . python-ts-mode)
+                     (css-mode . css-ts-mode)
+                     (typescript-mode . tsx-ts-mode)
+                     (json-mode . json-ts-mode)
+                     (js-mode . js-ts-mode)
+                     (css-mode . css-ts-mode)
+		     (rust-mode . rust-ts-mode)
+                     (yaml-mode . yaml-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping))
+
+  :config
+  (mp-setup-install-grammars)
+  ;; Do not forget to customize Combobulate to your liking:
+  ;;
+  ;;  M-x customize-group RET combobulate RET
+  ;;
+  (use-package combobulate
+    :preface
+    ;; You can customize Combobulate's key prefix here.
+    ;; Note that you may have to restart Emacs for this to take effect!
+    (setq combobulate-key-prefix "C-c o")
+
+    ;; Optional, but recommended.
+    ;;
+    ;; You can manually enable Combobulate with `M-x
+    ;; combobulate-mode'.
+    :hook ((python-ts-mode . combobulate-mode)
+           (js-ts-mode . combobulate-mode)
+           (css-ts-mode . combobulate-mode)
+           (yaml-ts-mode . combobulate-mode)
+           (json-ts-mode . combobulate-mode)
+           (typescript-ts-mode . combobulate-mode)
+           (tsx-ts-mode . combobulate-mode))
+    ;; Amend this to the directory where you keep Combobulate's source
+    ;; code.
+    :load-path ("path-to-git-checkout-of-combobulate")))
 
 ;; Get and enable Elpy
 (use-package elpy
@@ -283,7 +304,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 
 (require 'flymake-ruff)
-(add-hook 'python-mode-hook #'flymake-ruff-load)
+(add-hook 'python-ts-mode-hook #'flymake-ruff-load)
 
 ;; Enable flycheck
 (when (require 'flycheck nil t)
@@ -458,11 +479,14 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Define custom keybinding ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Select the entire word under the cursor
+(global-unset-key (kbd "C-<return>"))
+(global-set-key (kbd "C-<return>") 'mc--mark-symbol-at-point)
+
 ;; Set C-x o to C-{ to switch cursor to other windows
 (global-unset-key (kbd "C-x o"))
 (global-set-key (kbd "C-{") 'previous-window-any-frame)
 (global-set-key (kbd "C-}") 'next-window-any-frame)
-
 
 ;; unset C-S-i globally
 (global-unset-key (kbd "C-S-i"))
@@ -471,7 +495,7 @@ cleared, make sure the overlay doesn't come back too soon."
 (global-set-key (kbd "C-<tab>") 'company-complete)
 
 ;; Keybind C-S-i to format-buffer in rust-mode
-(add-hook 'rust-mode-hook
+(add-hook 'rust-ts-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
@@ -504,7 +528,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Set C-' to xref-find-references in python-mode only
 ;; (global-set-key (kbd "C-'") 'xref-find-references)
-(add-hook 'python-mode-hook
+(add-hook 'python-ts-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-c C-a b") 'dap-breakpoint-toggle)
 	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
@@ -538,7 +562,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;;;;;;;;;;;;;;;;;;;
 
 ;; Enable LSP for HTML for HTML files
-(add-hook 'html-mode-hook #'lsp)
+(add-hook 'html-ts-mode-hook #'lsp)
 
 ;; A list of JSON file paths that define custom tags, properties and other HTML syntax constructs.
 (setq lsp-html-experimental-custom-data (list (expand-file-name "html-languageserver.json" user-emacs-directory)))
@@ -581,12 +605,12 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; (define-key python-mode-map (kbd "<f4>") 'cvh/my-format-python-text)))
 
 ;; In css and html mode keybind my-format-python-text to C-S-i
-(add-hook 'css-mode-hook
+(add-hook 'css-ts-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") 'cvh/my-indent-whole-buffer)
 	    )
 	  )
-(add-hook 'html-mode-hook
+(add-hook 'html-ts-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") 'cvh/my-indent-whole-buffer)
 	    )
@@ -744,6 +768,8 @@ cleared, make sure the overlay doesn't come back too soon."
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'cvh/org-babel-tangle-config)))
+(add-hook 'org-mode-hook (lambda () (delete '("\\.pdf\\'" . default) org-file-apps)
+			   (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
 
 (use-package org
   ;;:pin org
@@ -1206,7 +1232,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package lsp-java
 :mode "\\.java\\'"
-:hook (java-mode . lsp))
+:hook (java-ts-mode . lsp))
 
 (add-to-list 'auto-mode-alist
 	     '("\\.cpp\\'" . c++-mode))
@@ -1216,12 +1242,6 @@ cleared, make sure the overlay doesn't come back too soon."
 :hook (shell-mode . lsp-deferred)
 :config
 (setq lsp-bash-highlight-parsing-errors t))
-
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2))
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
