@@ -241,7 +241,7 @@ cleared, make sure the overlay doesn't come back too soon."
 	       (make "https://github.com/alemuller/tree-sitter-make")
 	       (markdown "https://github.com/ikatyang/tree-sitter-markdown")
 	       (python "https://github.com/tree-sitter/tree-sitter-python")
-	       (rust "https://github.com/tree-sitter/tree-sitter-rust")
+	       ;; (rust "https://github.com/tree-sitter/tree-sitter-rust")
 	       (toml "https://github.com/tree-sitter/tree-sitter-toml")
 	       (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
 	       (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
@@ -265,7 +265,7 @@ cleared, make sure the overlay doesn't come back too soon."
                      (json-mode . json-ts-mode)
                      (js-mode . js-ts-mode)
                      (css-mode . css-ts-mode)
-		     (rust-mode . rust-ts-mode)
+		     ;; (rust-mode . rust-ts-mode)
                      (yaml-mode . yaml-ts-mode)))
     (add-to-list 'major-mode-remap-alist mapping))
 
@@ -495,7 +495,7 @@ cleared, make sure the overlay doesn't come back too soon."
 (global-set-key (kbd "C-<tab>") 'company-complete)
 
 ;; Keybind C-S-i to format-buffer in rust-mode
-(add-hook 'rust-ts-mode-hook
+(add-hook 'rust-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
