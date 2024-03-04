@@ -126,7 +126,7 @@ sudo pacman -Syu --noconfirm
 echo "###############################################"
 echo "Installing yay"
 echo "###############################################"
-sudo pacman -S --needed base-devel git
+sudo pacman -S --needed base-devel git --noconfirm
 
 # check if the command return a non-zero value
 if ! command -v yay &> /dev/null; then
@@ -157,7 +157,7 @@ yay -S firefox --noconfirm
 echo "###############################################"
 echo "Linking to .zsh"
 echo "###############################################"
-if [[ -d "$HOME/.zsh" ]]; then
+if [[ -d "$HOME/.zsh" || -L "$HOME/.zsh" ]]; then
     rm -rf $HOME/.zsh
 fi
 ln -s $HOME/dotfiles/.zsh $HOME/.zsh
@@ -182,8 +182,10 @@ if [[ ! -d "$HOME/.emacs.d/straight.el" ]]; then
     popd
 fi
  
-# Link to .zshrc that came from dotfiles
-if [[ -d "$HOME/.zshrc"  ]]; then
+echo "###############################################"
+echo "Linking .zshrc"
+echo "###############################################"
+if [[ -d "$HOME/.zshrc" || -L "$HOME/.zshrc" ]]; then
     rm -rf $HOME/.zshrc
 fi
 ln -s $HOME/dotfiles/.zshrc $HOME/.zshrc
@@ -272,9 +274,10 @@ if [[ ! -d "Python-3.12.2" ]];then
 fi
 pushd $HOME/.BUILDS/Python-3.12.2
 
-./configure --enable-optimizations --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6  --enable-ipv6
+./configure --enable-optimizations --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6
 
-sudo make -j install
+make -j
+sudo make altinstall
 popd
 popd
 
