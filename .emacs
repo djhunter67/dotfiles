@@ -10,7 +10,7 @@
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; Use plists instead of hashlist
-;;(setq lsp-use-plists t)
+(setq lsp-use-plists t)
 
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
@@ -63,6 +63,8 @@
 	prettier
 	flymake-ruff
 	ivy-posframe
+	origami
+	lsp-origami
 	)
       )
 
@@ -71,49 +73,129 @@
  (unless (package-installed-p package)
    (package-install package)))
 
-;; (setq treesit-language-source-alist
-;;    '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-;;      (cmake "https://github.com/uyha/tree-sitter-cmake")
-;;      (css "https://github.com/tree-sitter/tree-sitter-css")
-;;      (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-;;      (go "https://github.com/tree-sitter/tree-sitter-go")
-;;      (html "https://github.com/tree-sitter/tree-sitter-html")
-;;      (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-;;      (json "https://github.com/tree-sitter/tree-sitter-json")
-;;      (make "https://github.com/alemuller/tree-sitter-make")
-;;      (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-;;      (python "https://github.com/tree-sitter/tree-sitter-python")
-;;      (toml "https://github.com/tree-sitter/tree-sitter-toml")
-;;      (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-;;      (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-;;      ;; (rust "https://github.com/tree-sitter/tree-sitter-rust" "master" "rust/src")
-;;      (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-;; (setq major-mode-remap-alist
-;;  '((yaml-mode . yaml-ts-mode)
-;;    (bash-mode . bash-ts-mode)
-;;    (js2-mode . js-ts-mode)
-;;    (typescript-mode . typescript-ts-mode)
-;;    (json-mode . json-ts-mode)
-;;    (css-mode . css-ts-mode)
-;;    (python-mode . python-ts-mode)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;  Copilot  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Install straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+	(url-retrieve-synchronously
+	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	 'silent 'inhibit-cookies)
+      (goto-char (point-max))))
+  (load bootstrap-file nil 'nomessage))
 
+(use-package copilot
+  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+  :ensure t)
+;; you can utilize :map :hook and :config to customize copilot
 
-;; Eval new buffers to immediately update lsp
-;; (let* ((auto-insert nil) ; Disable auto insertion
-;;        (coding-system-for-read
-;; 	(or coding-system-for-read
-;; 	    (cdr (assq 'buffer-file-coding-system
-;; 		       desktop-buffer-locals))))
-;;        (buf (find-file-noselect buffer-filename :nowarn)))
-;;   (condition-case nil
-;;       (switch-to-buffer buf)
-;;     (error (pop-to-buffer buf)))
-;;   (and (not (eq major-mode desktop-buffer-major-mode))
-;;        (functionp desktop-buffer-major-mode)
-;;        (funcall desktop-buffer-major-mode)))
+;; Enable copilot globally
+(use-package copilot
+  :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
+  ;; don't show in mode line
+  :diminish)
 
+;; Github Copilot
+(defun cvh/no-copilot-mode ()
+  "Helper for `cvh/no-copilot-modes'."
+  (copilot-mode -1))
 
+(defvar cvh/no-copilot-modes '(shell-mode
+                              inferior-python-mode
+                              eshell-mode
+                              term-mode
+                              vterm-mode
+                              comint-mode
+                              compilation-mode
+                              debugger-mode
+                              dired-mode-hook
+                              compilation-mode-hook
+                              flutter-mode-hook
+                              minibuffer-mode-hook)
+  "Modes in which copilot is inconvenient.")
+
+(defun cvh/copilot-disable-predicate ()
+  "When copilot should not automatically show completions."
+  (or cvh/copilot-manual-mode
+      (member major-mode cvh/no-copilot-modes)
+      (company--active-p)))
+
+(add-to-list 'copilot-disable-predicates #'cvh/copilot-disable-predicate)
+
+(defvar cvh/copilot-manual-mode nil
+  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
+
+(defun cvh/copilot-change-activation ()
+  "Switch between three activation modes:
+- automatic: copilot will automatically overlay completions
+- manual: you need to press a key (M-C-<return>) to trigger completions
+- off: copilot is completely disabled."
+  (interactive)
+  (if (and copilot-mode cvh/copilot-manual-mode)
+      (progn
+        (message "deactivating copilot")
+        (global-copilot-mode -1)
+        (setq cvh/copilot-manual-mode nil))
+    (if copilot-mode
+        (progn
+          (message "activating copilot manual mode")
+          (setq cvh/copilot-manual-mode t))
+      (message "activating copilot mode")
+      (global-copilot-mode))))
+
+(define-key global-map (kbd "C-.") #'cvh/copilot-change-activation)
+
+(defun cvh/copilot-complete-or-accept ()
+  "Command that either triggers a completion or accepts one if one
+is available. Useful if you tend to hammer your keys like I do."
+  (interactive)
+  (if (copilot--overlay-visible)
+      (progn
+        (copilot-accept-completion)
+        (open-line 1)
+        (next-line))
+    (copilot-complete)))
+
+(define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
+(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion) 
+(define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
+(define-key copilot-mode-map (kbd "M-C-=") #'copilot-accept-completion-by-line)
+(define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)
+
+(defun cvh/copilot-tab ()
+  "Tab command that will complet with copilot if a completion is
+available. Otherwise will try company, yasnippet or normal
+tab-indent."
+  (interactive)
+  (or   
+   (company-complete)
+   (indent-for-tab-command)))
+
+;; (define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
+
+(defun cvh/copilot-quit ()
+  "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
+cleared, make sure the overlay doesn't come back too soon."
+  (interactive)
+  (condition-case err
+      (when copilot--overlay
+        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
+          (setq copilot-disable-predicates (list (lambda () t)))
+          (copilot-clear-overlay)
+          (run-with-idle-timer
+           1.0
+           nil
+           (lambda ()
+             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
+    (error handler)))
+
+(advice-add 'keyboard-quit :before #'cvh/copilot-quit)
 
 ;; Silence compiler warnings as they are disruptive
 (setq native-comp-async-report-warnings-errors nil)
@@ -139,6 +221,46 @@
 ;; Setup
 ;;====================================
 
+;; Solidity support
+(setq solidity-solc-path "/home/djhunter67/.BUILDS/solidity-0.8.23/build/solc/solc")
+;;TODO
+;; install solium or ethlint
+
+(require 'solidity-mode)
+(setq solidity-comment-style 'slash) ;; // comments
+(define-key solidity-mode-map (kbd "C-c C-p") 'solidity-estimate-gas-at-point)
+
+;; Solidity flycheck
+(require 'solidity-flycheck)
+(setq solidity-flycheck-solc-checker-active t)
+;; TODO
+;; install solium or ethlint for flycheck
+
+;; Solidity std contracts checker
+(setq flycheck-solidity-solc-addstd-contracts t)
+;; TODO
+;; Solium or Ethlint RC file
+
+;; Solidity company
+(require 'company-solidity)
+;; Company can use local variables
+(add-hook 'solidity-mode-hook
+	(lambda ()
+	(set (make-local-variable 'company-backends)
+		(append '((company-solidity company-capf company-dabbrev-code))
+			company-backends))))
+
+
+;; Install origami for code folding
+(use-package origami
+  :ensure t
+  :config
+  (global-origami-mode)
+  (define-key origami-mode-map (kbd "C-c f") 'origami-recursively-toggle-node)
+  (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes))
+
+
+
 ;; Get and enable Elpy
 (use-package elpy
   :ensure t
@@ -148,7 +270,6 @@
 
 (require 'flymake-ruff)
 (add-hook 'python-mode-hook #'flymake-ruff-load)
-
 ;; Enable flycheck
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
@@ -212,6 +333,14 @@
   (autoload 'zig-mode "zig-mode" nil t)
   (add-to-list 'auto-mode-alist '("\\.zig\\'" . zig-mode)))
 
+;; Setup eglot for rust
+(add-hook 'rust-mode-hook 'eglot-ensure)
+(add-hook 'rust-mode-hook 'flycheck-mode)
+(add-hook 'rust-mode-hook 'flymake-mode)
+(add-hook 'rust-mode-hook 'company-mode)
+(add-hook 'rust-mode-hook 'origami-mode)
+(add-hook 'rust-mode-hook 'yas-minor-mode)
+
 ;;Company mode 
 (use-package company
   :ensure
@@ -262,7 +391,7 @@
           (indent-for-tab-command)))))
 
 ;; inline inferred types
-(setq lsp-rust-analyzer-server-display-inlay-hints t)
+;; (setq lsp-rust-analyzer-server-display-inlay-hints t)
 
 (require 'multiple-cursors)
 
@@ -277,13 +406,13 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun cvh/set-font-faces ()
   (message "Setting faces!")
-  (set-face-attribute 'default nil :font "Cantarell" :height cvh/default-font-size)
+  (set-face-attribute 'default nil :font "Fira Code" :height cvh/default-font-size)
 
   ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil :font "Cantarell" :height cvh/default-font-size)
+  (set-face-attribute 'fixed-pitch nil :font "Fira Code" :height cvh/default-font-size)
 
   ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height cvh/default-variable-font-size :weight 'regular)
+  (set-face-attribute 'variable-pitch nil :font "Fira Code" :height cvh/default-variable-font-size :weight 'regular)
   )
 
 (if (daemonp)
@@ -293,6 +422,14 @@
 		(with-selected-frame frame
 		  (cvh/set-font-faces))))
   (cvh/set-font-faces))
+
+;; Setup Minted for pretty LaTeX code blocks in PDF's from org-mode
+(setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted"))
+      org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
 (use-package auto-package-update
   :custom
@@ -322,10 +459,9 @@
 ;; Disable the busted ass python-mypy checker
 (setq-default flycheck-disabled-checkers '(python-mypy))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Define custom keybinding ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;; Keybindings ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Code folding
 (global-set-key (kbd "<f5>") 'set-selective-display-dlw)
@@ -342,7 +478,9 @@ F5 again will unset 'selective-display' by setting it to 0."
 
 ;; Set C-x o to C-{ to switch cursor to other windows
 (global-unset-key (kbd "C-x o"))
-(global-set-key (kbd "C-{") 'other-window)
+(global-set-key (kbd "C-{") 'previous-window-any-frame)
+(global-set-key (kbd "C-}") 'next-window-any-frame)
+
 
 ;; unset C-S-i globally
 (global-unset-key (kbd "C-S-i"))
@@ -350,13 +488,17 @@ F5 again will unset 'selective-display' by setting it to 0."
 ;; Set C-<tab> to company-complete for only python-mode
 (global-set-key (kbd "C-<tab>") 'company-complete)
 
-;; Keybind C-S-i to format-buffer in rust-mode
+;; Keybind C-S-i to format-buffer in rust-mode and fast lsp actions at point
 (add-hook 'rust-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
+	    (local-set-key (kbd "C-c C-a") #'lsp-execute-code-action)
 	    )
 	  )
+
+
+
 
 ;; Set C-S-i to indent-for-tab in html-mode
 (defun cvh/indent-buffer ()
@@ -371,6 +513,7 @@ F5 again will unset 'selective-display' by setting it to 0."
     css-mode
     scss-mode
     elisp-mode
+    yaml-mode
     ))
 
 (dolist (mode cvh/modes-to-indent)
@@ -413,11 +556,19 @@ F5 again will unset 'selective-display' by setting it to 0."
 (add-hook 'after-save-hook
 	  #'executable-make-buffer-file-executable-if-script-p)
 
+(global-unset-key (kbd "C-r"))  ;; Just in case
+;; Set swiper-thing-at-point to C-r
+(global-set-key (kbd "C-r") 'swiper-thing-at-point)
+
+;; Select the entire word at point using mc--mark-symbol-at-point
+(global-set-key (kbd "C-<return>") 'mc--mark-symbol-at-point)
+
 ;; Enable hunspell
 (setq ispell-program-name "hunspell")
 (setq ispell-local-dictionary "de_DE")
 (setq ispell-local-dictionary-alist
       '(("de_DE" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil nil nil utf-8)))
+
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; HTML variables ;;
@@ -768,7 +919,7 @@ F5 again will unset 'selective-display' by setting it to 0."
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "Fira Code" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
@@ -998,7 +1149,28 @@ F5 again will unset 'selective-display' by setting it to 0."
   (lsp-ui-sideline-show-hover t)
   (lsp-ui-doc-enable nil)
   (lsp-ui-doc-show))
-  
+
+(use-package treemacs
+  :ensure t
+  :bind ("<f5>" . treemacs)
+  :custom
+  (treemacs-is-never-other-window t)
+  :hook
+  (treemacs-mode . treemacs-project-follow-mode))
+
+(use-package solaire-mode
+  :ensure t
+  :hook (after-init . solaire-global-mode)
+  :config
+  (push '(treemacs-window-background-face . solaire-default-face) solaire-mode-remap-alist)
+  (push '(treemacs-hl-line-face . solaire-hl-line-face) solaire-mode-remap-alist))
+
+(use-package fill-function-arguments
+  :ensure t
+  :defer
+  :bind (:map prog-mode-map
+              ("M-q" . fill-function-arguments-dwim)))
+
 (use-package lsp-treemacs
   :commands (lsp-treemacs-errors-list)
   :after lsp)
@@ -1006,28 +1178,6 @@ F5 again will unset 'selective-display' by setting it to 0."
 (use-package lsp-ivy
   :commands (lsp-ivy-workspace-symbol)
   :after lsp)
-
-;; Setup the rust LSP
-;; (use-package rustic
-;;   :ensure
-;;   :bind (:map rustic-mode-map
-;;               ("M-j" . lsp-ui-imenu)
-;;               ("M-?" . lsp-find-references)
-;;               ("C-c C-c l" . flycheck-list-errors)
-;;               ("C-c C-c a" . lsp-execute-code-action)
-;;               ("C-c C-c r" . lsp-rename)
-;;               ("C-c C-c q" . lsp-workspace-restart)
-;;               ("C-c C-c Q" . lsp-workspace-shutdown)
-;;               ("C-c C-c s" . lsp-rust-analyzer-status))
-;;   :config
-  ;; uncomment for less flashiness
-  ;; (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
-
-  ;; comment to disable rustfmt on save
-  ;; (setq rustic-format-on-save t)
-  ;; (add-hook 'rustic-mode-hook 'cvh/rustic-mode-hook))
 
 (defun cvh/rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
@@ -1132,137 +1282,14 @@ F5 again will unset 'selective-display' by setting it to 0."
       (format "<!DOCTYPE html><html><title>Impatient Markdown</title><xmp theme=\"united\" style=\"display:none;\"> %s  </xmp><script src=\"http://ndossougbe.github.io/strapdown/dist/strapdown.js\"></script></html>" (buffer-substring-no-properties (point-min) (point-max))))
 	   (current-buffer)))
 
-;; Install straight.el
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-	(url-retrieve-synchronously
-	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	 'silent 'inhibit-cookies)
-      (goto-char (point-max))))
-  (load bootstrap-file nil 'nomessage))
+;; SQL lsp
+;; (add-hook 'sql-mode-hook 'lsp)
+;; (setq lsp-sqls-workspace-config-path nil)
+;; (setq lsp-sqls-connections
+;;     '(((driver . "mysql") (dataSourceName . "yyoncho:local@tcp(localhost:3306)/foo"))
+;;       ((driver . "mssql") (dataSourceName . "Server=localhost;Database=sammy;User Id=yyoncho;Password=hunter2;"))
+;;       ((driver . "postgresql") (dataSourceName . "host=127.0.0.1 port=5432 user=postgres password="" dbname=""  sslmode=disable"))))
 
-(use-package copilot
-  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :ensure t)
-;; you can utilize :map :hook and :config to customize copilot
-		
-;; Setup Copilot
-(require 'cl)
-(let ((pkg-list '(use-package
-		          s
-		          dash
-		          editorconfig
-                  company)))
-  ;; (package-initialize)
-  (when-let ((to-install (map-filter (lambda (pkg _) (not (package-installed-p pkg))) pkg-list)))
-    (package-refresh-contents)
-    (mapc (lambda (pkg) (package-install pkg)) pkg-list)))
-
-
-(use-package copilot
-  :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
-  ;; don't show in mode line
-  :diminish)
-
-;; Github Copilot
-(defun cvh/no-copilot-mode ()
-  "Helper for `cvh/no-copilot-modes'."
-  (copilot-mode -1))
-
-(defvar cvh/no-copilot-modes '(shell-mode
-                              inferior-python-mode
-                              eshell-mode
-                              term-mode
-                              vterm-mode
-                              comint-mode
-                              compilation-mode
-                              debugger-mode
-                              dired-mode-hook
-                              compilation-mode-hook
-                              flutter-mode-hook
-                              minibuffer-mode-hook)
-  "Modes in which copilot is inconvenient.")
-
-(defun cvh/copilot-disable-predicate ()
-  "When copilot should not automatically show completions."
-  (or cvh/copilot-manual-mode
-      (member major-mode cvh/no-copilot-modes)
-      (company--active-p)))
-
-(add-to-list 'copilot-disable-predicates #'cvh/copilot-disable-predicate)
-
-(defvar cvh/copilot-manual-mode nil
-  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
-
-(defun cvh/copilot-change-activation ()
-  "Switch between three activation modes:
-- automatic: copilot will automatically overlay completions
-- manual: you need to press a key (M-C-<return>) to trigger completions
-- off: copilot is completely disabled."
-  (interactive)
-  (if (and copilot-mode cvh/copilot-manual-mode)
-      (progn
-        (message "deactivating copilot")
-        (global-copilot-mode -1)
-        (setq cvh/copilot-manual-mode nil))
-    (if copilot-mode
-        (progn
-          (message "activating copilot manual mode")
-          (setq cvh/copilot-manual-mode t))
-      (message "activating copilot mode")
-      (global-copilot-mode))))
-
-(define-key global-map (kbd "C-.") #'cvh/copilot-change-activation)
-
-(defun cvh/copilot-complete-or-accept ()
-  "Command that either triggers a completion or accepts one if one
-is available. Useful if you tend to hammer your keys like I do."
-  (interactive)
-  (if (copilot--overlay-visible)
-      (progn
-        (copilot-accept-completion)
-        (open-line 1)
-        (next-line))
-    (copilot-complete)))
-
-(define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
-(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion) 
-(define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "M-C-=") #'copilot-accept-completion-by-line)
-(define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)
-
-(defun cvh/copilot-tab ()
-  "Tab command that will complet with copilot if a completion is
-available. Otherwise will try company, yasnippet or normal
-tab-indent."
-  (interactive)
-  (or   
-   (company-complete)
-   (indent-for-tab-command)))
-
-;; (define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
-
-(defun cvh/copilot-quit ()
-  "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
-cleared, make sure the overlay doesn't come back too soon."
-  (interactive)
-  (condition-case err
-      (when copilot--overlay
-        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
-          (setq copilot-disable-predicates (list (lambda () t)))
-          (copilot-clear-overlay)
-          (run-with-idle-timer
-           1.0
-           nil
-           (lambda ()
-             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
-    (error handler)))
-
-(advice-add 'keyboard-quit :before #'cvh/copilot-quit)
 
 ;; Save emacs auto configs to a seperate file then load it.
 (setq custom-file (locate-user-emacs-file "~/.emacs.d/custom-vars.el"))

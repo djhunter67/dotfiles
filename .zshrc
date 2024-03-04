@@ -277,7 +277,7 @@ All notable changes will be appended here.
 											       
 This project, henceforth, will recongnize [semantic versioning](https://semver.org/).	       
 											       
-## [⭐.✴️.✳️] - YEAR MONTH DAY								       
+[⭐.✴️.✳️] - YEAR MONTH DAY								       
 											       
 Here we write upgrade and change notes.						       
 											       
@@ -338,7 +338,3 @@ source /home/djhunter67/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 unset ZSH_AUTOSUGGEST_USE_ASYNC
-export PATH=/home/djhunter67/.local/bin:/home/djhunter67/bin:/home/djhunter67/.cargo/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/opt/android-sdk/platform-tools:/var/lib/flatpak/exports/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/usr/lib/rustup/bin:/home/djhunter67/.cargo/bin:/usr/local/go/bin:/usr/local/texlive/2023/bin/x86_64-linux:/usr/local/texlive/2023/texmf-dist/doc/man:/usr/local/texlive/2023/texmf-dist/doc/man
-export PATH=/home/djhunter67/.local/bin:/home/djhunter67/bin:/home/djhunter67/.cargo/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/opt/android-sdk/platform-tools:/var/lib/flatpak/exports/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/usr/lib/rustup/bin:/home/djhunter67/.cargo/bin:/usr/local/go/bin:/usr/local/texlive/2023/bin/x86_64-linux:/usr/local/texlive/2023/texmf-dist/doc/man:/usr/local/texlive/2023/bin/x86_64-linux
-export PATH="/opt/cuda/bin:$PATH"
-export CUDA_HOME="/opt/cuda/"

@@ -19,7 +19,8 @@ set -e
 
 # packages to install
 PACKAGES=(
-    "wakatime-cli"
+    "rsync"
+    "wakatime"
     "v4l2loopback-dkms"
     "gphoto2"
     "ffmpeg"
@@ -31,7 +32,7 @@ PACKAGES=(
     "webkit2gtk"
     "gtk3"
     "neofetch"
-    "texlive"
+    # "texlive"
     "hunspell-en_us"
     "arduino"
     "zsh"
@@ -55,90 +56,206 @@ PACKAGES=(
     "perf"
     "pls"
     "awesome-terminal-fonts"
+    "ttf-firacode"
+    "kitty"
+    "rust-analyzer"
+    "texlive-fontsrecommended"
+    "pandoc"
+    "texlive-plaingeneric"
+    "texlive-latexextra"
+    "texlive-bin-extra"
+    "texlive-latex-extra"
+    "texlive-luatex"
+    "texlive-latex"
+    "pdflatex"
+    "libreoffice-still"
+    "hunspell"
+    "wget"
 )
 
+
+
 # Make the work directory
-pushd ~/Documents 
-![[  -d "work_worK_woRk_wOrk_Work_WORK" ]] && mkdir work_worK_woRk_wOrk_Work_WORK;
+echo "###############################################"
+echo "Making the work directory"
+echo "###############################################"
+if [[ ! -d "$HOME/Documents" ]]; then
+    mkdir -p $HOME/Documents
+fi
+
+pushd $HOME/Documents 
+if [[ ! -d "work_worK_woRk_wOrk_Work_WORK" ]]; then
+    mkdir -p work_worK_woRk_wOrk_Work_WORK
+fi
 
 popd  # go to  home directory
 
-# Make the .zsh directory if it doesn't exist
-![[ -d "~/.zsh" ]] && mkdir .zsh
-
 # Make the development directory
-![[ -d "dev" ]] && mkdir dev
+echo "###############################################"
+echo "Making the dev directory"
+echo "###############################################"
+if [[ ! -d "dev" ]]; then
+    mkdir -p $HOME/dev
+fi
 
 # Create the .BUILD directory
-![[ -d ".BUILDS" ]] && mkdir .BUILDS
+echo "###############################################"
+echo "Making the .BUILD directory"
+echo "###############################################"
+if [[ ! -d ".BUILDS" ]]; then
+    mkdir -p $HOME/.BUILDS
+fi
 
 # Create ssh key to pull the dotfiles repo from github
-![[ -f ".ssh/id_ed22519_base_key.pub"  ]] && ssh-keygen -t ed25519 -N "" -f /home/${USER}/.ssh/id_ed25519_base_key -q
-
-# Blocking command to show the pub key; Add keys to github repo(s)
 echo "###############################################"
-echo "Place the key onto GitHub"
+echo "Creating ssh key"
 echo "###############################################"
-more ~/.ssh/id_ed25519_base_key.pub
+if [[ ! -f ".ssh/id_ed22519_base_key.pub"  ]]; then
+    ssh-keygen -t ed25519 -N "" -f /home/${USER}/.ssh/id_ed25519_base_key -q
+fi
 
-# When command closes clone dotfiles repo
-sudo pacman -S git base-devel --noconfirm
 
-# Install the zsh autocomplete
-pushd ~/.zsh
-git clone  git@github.com:zsh-users/zsh-autosuggestions.git
-popd
+# Refresh the package database
+echo "###############################################"
+echo "Refreshing the package database"
+echo "###############################################"
+sudo pacman -Syu --noconfirm
 
-# Install the straight installation manager
-![[ -d "~/.emacs.d/straight.el" ]] && pushd ~/.emacs.d/ && git clone git@github.com:radian-software/straight.el.git
- 
-
-# Link to .zshrc that came from dotfiles
-![[ -L "~/.zshrc"  ]] && ln -s dotfiles/.zshrc .zshrc
-
-# Link to .zsh_history
-![[ -f "~/.zsh_history" ]] && rm .zsh_history && ln -s dotfiles/.zsh_history .zsh_history
-
-# Link to .emacs; remove any existing file
-[[ -f "~/.emacs" ]] && rm -rf ~/.emacs && ln -s dotfiles/.emacs .emacs
-
-# Link gitconfig
-[[ -L "~/.gitconfig" ]] && ln -s dotfiles/.gitconfig .gitconfig
 
 # Install yay
 echo "###############################################"
 echo "Installing yay"
 echo "###############################################"
+sudo pacman -S --needed base-devel git
 
+# check if the command return a non-zero value
+if ! command -v yay &> /dev/null; then
+    echo "Yay is not installed. Installing yay"
 
-if ![ -d "~/.BUILDS" ]; then
-    mkdir ~/.BUILDS
+    if [[ ! -d "/.BUILDS/yay" ]]; then
+	pushd $HOME/.BUILDS
+	git clone https://aur.archlinux.org/yay.git
+	pushd $HOME/.BUILDS/yay
+	export USER=$(whoami)
+	makepkg -si --noconfirm
+	popd
+	popd
+    else
+	pushd $HOME/.BUILDS/yay
+	makepkg -si --noconfirm
+	popd
+    fi
 fi
 
-if ![ -d "~/.BUILDS/yay" ]; then
-    git clone https://aur.archlinux.org/yay.git .BUILDS/yay
-    pushd .BUILDS/yay && makepkg -si --noconfirm
+# Install firefox
+echo "###############################################"
+echo "Installing Firefox"
+echo "###############################################"
+yay -S firefox --noconfirm
 
+# Link to .zsh that came from dotfiles
+echo "###############################################"
+echo "Linking to .zsh"
+echo "###############################################"
+if [[ -d "$HOME/.zsh" ]]; then
+    rm -rf $HOME/.zsh
+fi
+ln -s $HOME/dotfiles/.zsh $HOME/.zsh
+
+# Install the zsh autocomplete
+if [[ ! -d "$HOME/.zsh/zsh-autosuggestions" ]]; then
+
+    pushd $HOME/.zsh
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git
     popd
 fi
 
-# Install all of the PACKAGES
-yay -S ${PACKAGES[@]} --noconfirm
+# check for then install emacs.d directory
+if [[ ! -d "$HOME/.emacs.d" ]]; then
+	mkdir -p $HOME/.emacs.d
+fi
+
+# Install the straight installation manager
+if [[ ! -d "$HOME/.emacs.d/straight.el" ]]; then
+    pushd $HOME/.emacs.d/
+    git clone https://github.com/radian-software/straight.el.git
+    popd
+fi
+ 
+# Link to .zshrc that came from dotfiles
+if [[ -d "$HOME/.zshrc"  ]]; then
+    rm -rf $HOME/.zshrc
+fi
+ln -s $HOME/dotfiles/.zshrc $HOME/.zshrc
+
+# Link to .zsh_history
+if [[ -f "$HOME/.zsh_history" ]]; then
+    rm $HOME/.zsh_history
+fi
+ln -s $HOME/dotfiles/.zsh_history $HOME/.zsh_history
+
+echo "###############################################"
+echo "REMOVING THE OLD .emacs FILE"
+echo "###############################################"
+# Link to .emacs; remove any existing file
+if [[ -f "$HOME/.emacs" ]]; then
+    rm -rf $HOME/.emacs
+    ln -s $HOME/dotfiles/.emacs $HOME/.emacs
+fi
+# Link gitconfig
+if [[ -L "$HOME/.gitconfig" ]]; then
+    rm $HOME/.gitconfig
+    ln -s $HOME/dotfiles/.gitconfig $HOME/.gitconfig
+fi
+
+if [[ ! -d "$HOME/.BUILDS" ]]; then
+    mkdir -p $HOME/.BUILDS
+fi
+
+if [[ ! -d "$HOME/.BUILDS/yay" ]]; then
+    git clone https://aur.archlinux.org/yay.git .BUILDS/
+    yay
+    pushd $HOME/.BUILDS/yay && makepkg -si --noconfirm
+
+    popd
+fi
 
 # Install rust
 echo "###############################################"
 echo "Installing Rust"
 echo "###############################################"
 
-pushd ~/.BUILDS
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-source "$HOME/.cargo/env"
+# if rustup is not a valid command then install rustup
+if ! command -v rustup &> /dev/null; then
+    pushd $HOME/.BUILDS
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-rustup install stable
-rustup default stable
+    source "$HOME/.cargo/env"
 
-popd
+    rustup install stable
+    rustup default stable
+
+    popd
+fi
+
+# Echo the packages to install
+echo "###############################################"
+echo "Installing the following packages"
+echo "###############################################"
+for i in "${PACKAGES[@]}"
+do
+    echo "$i"
+done
+
+# Check if the packages are installed and if not install them
+for i in "${PACKAGES[@]}"
+do
+    if ! pacman -Qi "$i" &> /dev/null; then
+	yay -S "$i" --noconfirm --needed
+    fi
+done
+
 
 # Install the latest stable version of python from source
 echo "###############################################"
@@ -147,19 +264,59 @@ echo "###############################################"
 
 export PYTHON_VERSION=$(python -V)
 
-pushd ~/.BUILDS
+pushd $HOME/.BUILDS
 
-if [[ ! -d "python" ]]; then
-    
-    wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz
+if [[ ! -d "Python-3.12.2" ]];then
+    wget https://www.python.org/ftp/python/3.12.2/Python-3.12.2.tar.xz
     tar -xf Python*.tar.xz
-    pushd Python-3.12.0
+fi
+pushd $HOME/.BUILDS/Python-3.12.2
 
-    ./configure --prefix=/home/${USER}/.local/ --exec-prefix=/home/${USER}/.local/ --enable-optimizations --bindir=/home/${USER}/.local/ --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6 --oldincludedir=/home/${USER}/.local/ --enable-ipv6
+./configure --enable-optimizations --with-ensurepip=install --enable-shared --enable-profiling --enable-pystats --enable-loadable-sqlite-extensions --enable-ipv6  --enable-ipv6
 
-    make -j install
+sudo make -j install
+popd
+popd
 
-    
+# Install the Golang programming language
+echo "###############################################"
+echo "Installing Golang"
+echo "###############################################"
+if ! command -v go &> /dev/null; then
+    pushd $HOME/.BUILDS
+    wget https://golang.org/dl/go1.17.6.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.17.6.linux-amd64.tar.gz
     popd
 fi
-popd
+echo "GOLANG is installed at /usr/local/go"
+
+
+# Blocking command to show the pub key; Add keys to github repo(s)
+echo "###############################################"
+echo "Place the key onto GitHub"
+echo "###############################################"
+less $HOME/.ssh/id_ed25519_base_key.pub
+
+# Setup Github ssh commit signing key
+echo "###############################################"
+echo "Setting up the ssh key for commit signing"
+echo "###############################################"
+git config --global user.signingkey $(ssh-keygen -lf $HOME/.ssh/id_ed25519_base_key.pub | awk '{print $2}')
+git config --global commit.gpgsign true
+
+# Evaluate the ssh-agent
+echo "###############################################"
+echo "Evaluating the ssh-agent"
+echo "###############################################"
+eval "$(ssh-agent -s)"
+ssh-add $HOME/.ssh/id_ed25519_base_key
+
+echo -n "\n\n\n"
+echo "###############################################"
+echo "Setup zsh and put ssh key on github"
+echo "###############################################"
+# Show the command to change the shell to zsh
+echo "To change the shell to zsh, run the following command:"
+echo "chsh -s $(which zsh)"
+
+

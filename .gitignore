@@ -1,3 +1,4 @@
 .elc
 *.elc
 flycheck_.emacs
+*~
