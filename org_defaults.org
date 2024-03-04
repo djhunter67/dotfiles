@@ -1,7 +1,7 @@
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [article, 12pt, letterpaper]
 #+LATEX_HEADER: \usepackage[top=0.5in, bottom=1.15in, left=0.5in, right=0.75in, includefoot]{geometry}
-#+OPTIONS: num:nil title:nil toc:nil timestamp:nil date:nil \n:t
+#+OPTIONS: toc:nil num:nil title:nil timestamp:nil date:nil \n:t
 #+LATEX_HEADER: \usepackage{lmodern} % Ensure the correct font
 #+LATEX_HEADER: \usepackage[AUTO]{inputenc} 
 #+LATEX_HEADER: \usepackage{graphicx} % Enable graphics

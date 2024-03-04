@@ -197,10 +197,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (advice-add 'keyboard-quit :before #'cvh/copilot-quit)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Key Bindings  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;; Silence compiler warnings as they are disruptive
 (setq native-comp-async-report-warnings-errors nil)
 
@@ -422,6 +418,14 @@ cleared, make sure the overlay doesn't come back too soon."
 		  (cvh/set-font-faces))))
   (cvh/set-font-faces))
 
+;; Setup Minted for pretty LaTeX code blocks in PDF's from org-mode
+(setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted"))
+      org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+
 (use-package auto-package-update
   :custom
   (auto-package-update-interval 7)
@@ -466,13 +470,17 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Set C-<tab> to company-complete for only python-mode
 (global-set-key (kbd "C-<tab>") 'company-complete)
 
-;; Keybind C-S-i to format-buffer in rust-mode
+;; Keybind C-S-i to format-buffer in rust-mode and fast lsp actions at point
 (add-hook 'rust-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
+	    (local-set-key (kbd "C-c C-a") #'lsp-execute-code-action)
 	    )
 	  )
+
+
+
 
 ;; Set C-S-i to indent-for-tab in html-mode
 (defun cvh/indent-buffer ()
@@ -487,6 +495,7 @@ cleared, make sure the overlay doesn't come back too soon."
     css-mode
     scss-mode
     elisp-mode
+    yaml-mode
     ))
 
 (dolist (mode cvh/modes-to-indent)
