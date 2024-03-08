@@ -224,77 +224,77 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; `M-x combobulate' (default: `C-c o o') to start using Combobulate
-(use-package treesit-auto
-  :preface
-  (defun mp-setup-install-grammars ()
-    "Install Tree-sitter grammars if they are absent."
-    (interactive)
-    (dolist (grammar
-             '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-	       (cmake "https://github.com/uyha/tree-sitter-cmake")
-	       (css "https://github.com/tree-sitter/tree-sitter-css")
-	       (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-	       (go "https://github.com/tree-sitter/tree-sitter-go")
-	       (html "https://github.com/tree-sitter/tree-sitter-html")
-	       (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-	       (json "https://github.com/tree-sitter/tree-sitter-json")
-	       (make "https://github.com/alemuller/tree-sitter-make")
-	       (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-	       (python "https://github.com/tree-sitter/tree-sitter-python")
-	       ;; (rust "https://github.com/tree-sitter/tree-sitter-rust")
-	       (toml "https://github.com/tree-sitter/tree-sitter-toml")
-	       (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-	       (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-	       (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-      (add-to-list 'treesit-language-source-alist grammar)
-      ;; Only install `grammar' if we don't already have it
-      ;; installed. However, if you want to *update* a grammar then
-      ;; this obviously prevents that from happening.
-      (unless (treesit-language-available-p (car grammar))
-        (treesit-install-language-grammar (car grammar)))))
+;; (use-package treesit-auto
+;;   :preface
+;;   (defun mp-setup-install-grammars ()
+;;     "Install Tree-sitter grammars if they are absent."
+;;     (interactive)
+;;     (dolist (grammar
+;;              '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+;; 	       (cmake "https://github.com/uyha/tree-sitter-cmake")
+;; 	       (css "https://github.com/tree-sitter/tree-sitter-css")
+;; 	       (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+;; 	       (go "https://github.com/tree-sitter/tree-sitter-go")
+;; 	       (html "https://github.com/tree-sitter/tree-sitter-html")
+;; 	       (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+;; 	       (json "https://github.com/tree-sitter/tree-sitter-json")
+;; 	       (make "https://github.com/alemuller/tree-sitter-make")
+;; 	       (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+;; 	       (python "https://github.com/tree-sitter/tree-sitter-python")
+;; 	       ;; (rust "https://github.com/tree-sitter/tree-sitter-rust")
+;; 	       (toml "https://github.com/tree-sitter/tree-sitter-toml")
+;; 	       (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+;; 	       (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+;; 	       (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+;;       (add-to-list 'treesit-language-source-alist grammar)
+;;       ;; Only install `grammar' if we don't already have it
+;;       ;; installed. However, if you want to *update* a grammar then
+;;       ;; this obviously prevents that from happening.
+;;       (unless (treesit-language-available-p (car grammar))
+;;         (treesit-install-language-grammar (car grammar)))))
 
-  ;; Optional, but recommended. Tree-sitter enabled major modes are
-  ;; distinct from their ordinary counterparts.
-  ;;
-  ;; You can remap major modes with `major-mode-remap-alist'. Note
-  ;; that this does *not* extend to hooks! Make sure you migrate them
-  ;; also
-  (dolist (mapping '((python-mode . python-ts-mode)
-                     (css-mode . css-ts-mode)
-                     (typescript-mode . tsx-ts-mode)
-                     (json-mode . json-ts-mode)
-                     (js-mode . js-ts-mode)
-                     (css-mode . css-ts-mode)
-		     ;; (rust-mode . rust-ts-mode)
-                     (yaml-mode . yaml-ts-mode)))
-    (add-to-list 'major-mode-remap-alist mapping))
+;;   ;; Optional, but recommended. Tree-sitter enabled major modes are
+;;   ;; distinct from their ordinary counterparts.
+;;   ;;
+;;   ;; You can remap major modes with `major-mode-remap-alist'. Note
+;;   ;; that this does *not* extend to hooks! Make sure you migrate them
+;;   ;; also
+;;   (dolist (mapping '((python-mode . python-ts-mode)
+;;                      (css-mode . css-ts-mode)
+;;                      (typescript-mode . tsx-ts-mode)
+;;                      (json-mode . json-ts-mode)
+;;                      (js-mode . js-ts-mode)
+;;                      (css-mode . css-ts-mode)
+;; 		     ;; (rust-mode . rust-ts-mode)
+;;                      (yaml-mode . yaml-ts-mode)))
+;;     (add-to-list 'major-mode-remap-alist mapping))
 
-  :config
-  (mp-setup-install-grammars)
-  ;; Do not forget to customize Combobulate to your liking:
-  ;;
-  ;;  M-x customize-group RET combobulate RET
-  ;;
-  (use-package combobulate
-    :preface
-    ;; You can customize Combobulate's key prefix here.
-    ;; Note that you may have to restart Emacs for this to take effect!
-    (setq combobulate-key-prefix "C-c o")
+;;   :config
+;;   (mp-setup-install-grammars)
+;;   ;; Do not forget to customize Combobulate to your liking:
+;;   ;;
+;;   ;;  M-x customize-group RET combobulate RET
+;;   ;;
+;;   (use-package combobulate
+;;     :preface
+;;     ;; You can customize Combobulate's key prefix here.
+;;     ;; Note that you may have to restart Emacs for this to take effect!
+;;     (setq combobulate-key-prefix "C-c o")
 
-    ;; Optional, but recommended.
-    ;;
-    ;; You can manually enable Combobulate with `M-x
-    ;; combobulate-mode'.
-    :hook ((python-ts-mode . combobulate-mode)
-           (js-ts-mode . combobulate-mode)
-           (css-ts-mode . combobulate-mode)
-           (yaml-ts-mode . combobulate-mode)
-           (json-ts-mode . combobulate-mode)
-           (typescript-ts-mode . combobulate-mode)
-           (tsx-ts-mode . combobulate-mode))
-    ;; Amend this to the directory where you keep Combobulate's source
-    ;; code.
-    :load-path ("path-to-git-checkout-of-combobulate")))
+;;     ;; Optional, but recommended.
+;;     ;;
+;;     ;; You can manually enable Combobulate with `M-x
+;;     ;; combobulate-mode'.
+;;     :hook ((python-ts-mode . combobulate-mode)
+;;            (js-ts-mode . combobulate-mode)
+;;            (css-ts-mode . combobulate-mode)
+;;            (yaml-ts-mode . combobulate-mode)
+;;            (json-ts-mode . combobulate-mode)
+;;            (typescript-ts-mode . combobulate-mode)
+;;            (tsx-ts-mode . combobulate-mode))
+;;     ;; Amend this to the directory where you keep Combobulate's source
+;;     ;; code.
+;;     :load-path ("path-to-git-checkout-of-combobulate")))
 
 ;; Get and enable Elpy
 (use-package elpy
@@ -499,6 +499,7 @@ cleared, make sure the overlay doesn't come back too soon."
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
+	    (local-set-key (kbd "C-a") #'lsp-execute-code-action)
 	    )
 	  )
 
@@ -662,8 +663,8 @@ cleared, make sure the overlay doesn't come back too soon."
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;;  A doom theme
-(use-package doom-themes
-  :init (load-theme 'doom-dark+ t))
+;; (use-package doom-themes
+;;   :init (load-theme 'doom-dark+ t))
 ;; (load-theme 'modus-vivendi t)
 
 (use-package all-the-icons
@@ -1150,26 +1151,26 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Setup the rust LSP
 
-;; (use-package rustic
-;;   :ensure
-;;   :bind (:map rustic-mode-map
-;;               ("M-j" . lsp-ui-imenu)
-;;               ("M-?" . lsp-find-references)
-;;               ("C-c C-c l" . flycheck-list-errors)
-;;               ("C-c C-c a" . lsp-execute-code-action)
-;;               ("C-c C-c r" . lsp-rename)
-;;               ("C-c C-c q" . lsp-workspace-restart)
-;;               ("C-c C-c Q" . lsp-workspace-shutdown)
-;;               ("C-c C-c s" . lsp-rust-analyzer-status))
-;;   :config
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
   ;; uncomment for less flashiness
-  ;; (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
+  (setq lsp-eldoc-hook nil)
+  (setq lsp-enable-symbol-highlighting nil)
+  (setq lsp-signature-auto-activate nil)
 
   ;; comment to disable rustfmt on save
   ;; (setq rustic-format-on-save t)
-  ;; (add-hook 'rustic-mode-hook 'cvh/rustic-mode-hook))
+  (add-hook 'rustic-mode-hook 'cvh/rustic-mode-hook))
 
 (defun cvh/rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
@@ -1276,6 +1277,9 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;       ((driver . "mssql") (dataSourceName . "Server=localhost;Database=sammy;User Id=yyoncho;Password=hunter2;"))
 ;;       ((driver . "postgresql") (dataSourceName . "host=127.0.0.1 port=5432 user=postgres password="" dbname=""  sslmode=disable"))))
 
+
+(set-foreground-color "snow")
+(set-background-color "black")
 
 ;; Save emacs auto configs to a seperate file then load it.
 (setq custom-file (locate-user-emacs-file "~/.emacs.d/custom-vars.el"))
