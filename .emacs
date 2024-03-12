@@ -128,93 +128,10 @@
 ;; you can utilize :map :hook and :config to customize copilot
 
 
-
-(require 'multiple-cursors)
-
-(add-to-list 'load-path "~/dotfiles/copilot.el/")
-(require 'copilot)
-
-
-;; Initialize use-package on non-Linux platforms
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t)
-
-(set-language-environment "UTF-8")
-(set-default-coding-systems 'utf-8)
-
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package fira-code-mode								  ;;
-;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
-;; :hook prog-mode)  								  ;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(set-face-attribute 'default nil :font "Fira Code Retina" :height cvh/default-font-size)
-
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height cvh/default-font-size)
-
-
-;;=======================================
-;; CUSTOM BINDINGS
-;;=======================================
-
-;; Imenu-list bindings
-(global-set-key (kbd "C-,") #'imenu-list-smart-toggle)
-(setq imenu-list-focus-after-activation t)
-
-;; Find references
-(global-set-key (kbd "C-'") 'lsp-ui-peek-find-references)
-
-;; Comment the line
-(global-set-key (kbd "C-;") 'comment-line)
-
-;; Set selected indent left
-(global-set-key (kbd "C-{") 'indent-rigidly-left-to-tab-stop)
-
-;; Set selected indent right
-(global-set-key (kbd "C-}") 'indent-rigidly-right-to-tab-stop)
-
-;; Switch buffers fast
-(global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
-(global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
-
-;; Multiple Cursors
-(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-
-(global-unset-key (kbd "C-<down-mouse-1>"))
-(global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
-
-;; Delete line from cursor to beginning
-(global-set-key (kbd "S-<delete>") 'kill-whole-line)
-
-;; Immediately kill the focused buffer
-(global-unset-key (kbd "C-x k"))
-(global-set-key (kbd "C-x k") 'kill-this-buffer)
-
-;; Python mode --> autoformat tabs and comments
-(defun my-format-python-text ()
-  "untabify and wrap python comments"
-  (interactive)
-  (untabify (point-min) (point-max))
-  (goto-char (point-min))
-  (while (re-search-forward comment-start nil t)
-    (call-interactively 'fill-paragraph)
-    (forward-line 1)))
-
-(eval-after-load "python"
-  '(progn
-     (define-key python-mode-map (kbd "RET") 'newline-and-indent)
-     (define-key python-mode-map (kbd "<f4>") 'my-format-python-text)))
-
-;; Autopep8 execute
-(setq py-autopep8-options '("--max-line-length=100"))
-(define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer)
+;; (use-package copilot
+  ;; :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
+  ;; don't show in mode line
+  ;; :diminish)
 
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
@@ -810,7 +727,7 @@ cleared, make sure the overlay doesn't come back too soon."
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
-	    (local-set-key (kbd "C-a") #'lsp-execute-code-action)
+	    (local-set-key (kbd "C-c C-a") #'lsp-execute-code-action)
 	    )
 	  )
 
