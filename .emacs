@@ -96,10 +96,10 @@
 ;; you can utilize :map :hook and :config to customize copilot
 
 
-(use-package copilot
-  :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
+;; (use-package copilot
+  ;; :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
   ;; don't show in mode line
-  :diminish)
+  ;; :diminish)
 
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
@@ -499,7 +499,7 @@ cleared, make sure the overlay doesn't come back too soon."
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
-	    (local-set-key (kbd "C-a") #'lsp-execute-code-action)
+	    (local-set-key (kbd "C-c C-a") #'lsp-execute-code-action)
 	    )
 	  )
 
