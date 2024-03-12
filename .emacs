@@ -223,6 +223,16 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;;;;;;;;;;;;; Setup ;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(use-package default-text-scale
+    :ensure t
+    :config
+    (setq default-text-scale-amount 8)
+    :bind
+    ;; Plus makes it better
+    ("M-+" . default-text-scale-increase)
+    ;; Underscore makes it smaller (- is already bound)
+    ("M-_" . default-text-scale-decrease))
+
 ;; `M-x combobulate' (default: `C-c o o') to start using Combobulate
 ;; (use-package treesit-auto
 ;;   :preface
