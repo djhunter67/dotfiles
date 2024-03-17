@@ -90,6 +90,9 @@
       (goto-char (point-max))))
   (load bootstrap-file nil 'nomessage))
 
+(eval-when-compile
+  (require 'use-package))
+
 (use-package copilot
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t)

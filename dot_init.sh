@@ -37,7 +37,6 @@ PACKAGES=(
     "arduino"
     "zsh"
     "zsh-theme-powerlevel10k"
-    "tree"
     "texlive-basic"
     "ruff"
     "redis"
