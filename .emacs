@@ -96,10 +96,6 @@
 ;; you can utilize :map :hook and :config to customize copilot
 
 
-;; (use-package copilot
-  ;; :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
-  ;; don't show in mode line
-  ;; :diminish)
 
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
@@ -675,7 +671,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;  A doom theme
 ;; (use-package doom-themes
 ;;   :init (load-theme 'doom-dark+ t))
-;; (load-theme 'modus-vivendi t)
+(load-theme 'manoj-dark t)
 
 (use-package all-the-icons
   :if (display-graphic-p)
