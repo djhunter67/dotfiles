@@ -65,6 +65,7 @@
 	ivy-posframe
 	origami
 	lsp-origami
+	tree-sitter-langs
 	)
       )
 
@@ -223,6 +224,16 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Setup
 ;;====================================
+
+;; Tree-sitter for syntax highlighting
+(use-package treesit-auto
+  :ensure t
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
 
 ;; Solidity support
 (setq solidity-solc-path "/home/djhunter67/.BUILDS/solidity-0.8.23/build/solc/solc")
