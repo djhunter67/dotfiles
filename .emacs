@@ -173,7 +173,7 @@ is available. Useful if you tend to hammer your keys like I do."
 (define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)
 
 (defun cvh/copilot-tab ()
-  "Tab command that will complet with copilot if a completion is
+  "Tab command that will complete with copilot if a completion is
 available. Otherwise will try company, yasnippet or normal
 tab-indent."
   (interactive)
@@ -217,8 +217,8 @@ cleared, make sure the overlay doesn't come back too soon."
 (setq global-auto-revert-non-file-buffers t)
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar cvh/default-font-size 110)
-(defvar cvh/default-variable-font-size 110)
+(defvar cvh/default-font-size 90)
+(defvar cvh/default-variable-font-size 90)
 
 (require 'package)
 
@@ -503,16 +503,13 @@ F5 again will unset 'selective-display' by setting it to 0."
 (global-set-key (kbd "C-<tab>") 'company-complete)
 
 ;; Keybind C-S-i to format-buffer in rust-mode and fast lsp actions at point
-(add-hook 'rust-mode-hook
+(add-hook 'prog-mode
 	  (lambda ()
-	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
+	    (local-set-key (kbd "C-S-i") #'lsp-format-buffer)
 	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
 	    (local-set-key (kbd "C-c C-a") #'lsp-execute-code-action)
 	    )
 	  )
-
-
-
 
 ;; Set C-S-i to indent-for-tab in html-mode
 (defun cvh/indent-buffer ()
