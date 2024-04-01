@@ -58,6 +58,7 @@ PACKAGES=(
     "ttf-firacode"
     "kitty"
     "rust-analyzer"
+    "usbutils"
 )
 
 # Install firefox

@@ -95,8 +95,6 @@
   :ensure t)
 ;; you can utilize :map :hook and :config to customize copilot
 
-
-
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
   "Helper for `cvh/no-copilot-modes'."
@@ -504,10 +502,18 @@ cleared, make sure the overlay doesn't come back too soon."
 (add-hook 'rust-mode-hook
 	  (lambda ()
 	    (local-set-key (kbd "C-S-i") #'rustic-format-buffer)
-	    (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
+	    ;; (local-set-key (kbd "C-'") #'lsp-ui-peek-find-references)
 	    (local-set-key (kbd "C-c C-a") #'lsp-execute-code-action)
 	    )
 	  )
+
+;; Keybind C-' to lsp-peek refrences in programming mode
+(add-hook 'prog-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)
+	    )
+	  )
+
 
 ;; Set C-S-i to indent-for-tab in html-mode
 (defun cvh/indent-buffer ()
