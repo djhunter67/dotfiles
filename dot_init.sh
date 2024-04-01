@@ -59,19 +59,7 @@ PACKAGES=(
     "ttf-firacode"
     "ghostty"
     "rust-analyzer"
-    "texlive-fontsrecommended"
-    "pandoc"
-    "texlive-plaingeneric"
-    "texlive-latexextra"
-    "texlive-bin-extra"
-    "texlive-latex-extra"
-    "texlive-luatex"
-    "texlive-latex"
-    "pdflatex"
-    "libreoffice-still"
-    "hunspell"
-    "wget"
-    "prettier"
+    "usbutils"
 )
 
 
