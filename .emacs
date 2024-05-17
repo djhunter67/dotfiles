@@ -390,10 +390,15 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (global-origami-mode)
   (define-key origami-mode-map (kbd "C-c f") 'origami-recursively-toggle-node)
-  (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes)
-  (define-key origami-mode-map (kbd "C-c t") 'origami-toggle-node)
-  (define-key origami-mode-map (kbd "C-c r") 'origami-reset)
-  (define-key origami-mode-map (kbd "C-c u") 'origami-undo))
+  (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes))
+
+
+
+;; Get and enable 
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
 
 (require 'flymake-ruff)
 (add-hook 'python-ts-mode-hook #'flymake-ruff-load)
@@ -1320,7 +1325,7 @@ there's a region, all lines that region covers will be duplicated."
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
          ("C-p" . ivy-previous-line))
-  ;; ("C-r" . ivy-reverse-i-search-kill))
+         ("C-r" . ivy-reverse-i-search-kill)
   :config
   (ivy-mode 1))
 
