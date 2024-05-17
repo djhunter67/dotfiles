@@ -62,33 +62,29 @@ fi
 
 export KITTY_CONFIG_DIRECTORY="$HOME/.config/kitty/kitty.conf"
 
+# Keybindings
+#
+bindkey -e  # Emacs keybindings respected for zsh
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+
 # Increase Bash history size. Allow 32³ entries; the default is 500.
 #
-HISTFILE=~/.zsh_history
 HISTSIZE=32768
-SAVEHIST=30000
-HISTFILESIZE="${HISTSIZE}"
-setopt APPENDHISTORY
-
-# Ignore duplicates, ls without options and builtin commands
-#
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
 HISTCONTROL=ignoreboth
-HISTIGNORE="&:ls:[bf]g:exit"
+HISTIGNORE="&:ls:[bf]g:exit" # Ignore duplicates, ls without options and builtin commands
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_find_no_dups
 
 # Modify history file
 #
-setopt INC_APPEND_HISTORY
 HISTTIMEFORMAT="[%F %T] "
-
-# Add timestampt to command
-#
-setopt EXTENDED_HISTORY
-
-# No Duplicates
-#
-setopt HIST_IGNORE_ALL_DUPS
-setopt SHARE_HISTORY
-unsetopt HIST_IGNORE_DUPS
 
 # Color for manpages
 #

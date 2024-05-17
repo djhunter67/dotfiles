@@ -306,7 +306,6 @@ cleared, make sure the overlay doesn't come back too soon."
   :init
   (elpy-enable))
 
-
 (require 'flymake-ruff)
 (add-hook 'python-ts-mode-hook #'flymake-ruff-load)
 
@@ -1039,7 +1038,7 @@ cleared, make sure the overlay doesn't come back too soon."
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
          ("C-p" . ivy-previous-line))
-         ;; ("C-r" . ivy-reverse-i-search-kill))
+         ("C-r" . ivy-reverse-i-search-kill)
   :config
   (ivy-mode 1))
 
