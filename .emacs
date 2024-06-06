@@ -469,6 +469,47 @@ cleared, make sure the overlay doesn't come back too soon."
 		  (cvh/set-font-faces))))
   (cvh/set-font-faces))
 
+;;=======================================
+;; CUSTOM BINDINGS
+;;=======================================
+
+;; Imenu-list bindings
+(global-set-key (kbd "C-,") #'imenu-list-smart-toggle)
+(setq imenu-list-focus-after-activation t)
+
+;; Find references
+(global-set-key (kbd "C-'") 'lsp-ui-peek-find-references)
+
+;; Comment the line
+(global-set-key (kbd "C-;") 'comment-line)
+
+;; Set selected indent left
+(global-set-key (kbd "C-{") 'indent-rigidly-left-to-tab-stop)
+
+;; Set selected indent right
+(global-set-key (kbd "C-}") 'indent-rigidly-right-to-tab-stop)
+
+;; Switch buffers fast
+(global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
+(global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
+
+;; Multiple Cursors
+(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
+(global-unset-key (kbd "C-<down-mouse-1>"))
+(global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
+
+;; Delete line from cursor to beginning
+(global-set-key (kbd "S-<delete>") 'kill-whole-line)
+
+;; Immediately kill the focused buffer
+(global-unset-key (kbd "C-x k"))
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+
 ;; Setup Minted for pretty LaTeX code blocks in PDF's from org-mode
 (setq org-latex-listings 'minted
       org-latex-packages-alist '(("" "minted"))
