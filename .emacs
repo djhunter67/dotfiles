@@ -4,10 +4,13 @@
 
 ;;; Code:
 ;; The default is 800 kilobytes.  Measured in bytes.
-(setq gc-cons-threshold 100000000)  ;; 100mb
+(setq gc-cons-threshold 1000)  ;; 1Mb
 
 ;; Increase the amount of data which Emacs reads from the process
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
+
+;; Increase maximum number of lisp evaluations
+(setq max-lisp-eval-depth 10000)
 
 ;; Use plists instead of hashlist
 (setq lsp-use-plists t)
@@ -22,9 +25,9 @@
 		     gcs-done)))
 
 (setq package-archives
-             '(("melpa" . "https://melpa.org/packages/")
-               ("org"  .  "https://orgmode.org/elpa/")
-               ("elpa" . "https://elpa.gnu.org/packages/")))
+      '(("melpa" . "https://melpa.org/packages/")
+        ("org"  .  "https://orgmode.org/elpa/")
+        ("elpa" . "https://elpa.gnu.org/packages/")))
 
 ;; Prevent package.el loading packages prior to init-file loading.
 (setq package-enable-at-startup nil)
@@ -46,9 +49,18 @@
 ;; Append to emacs PATH
 (setq user-emacs-directory "~/.emacs.d")
 
+;; Set the warning level
+(setq warning-minimum-level :error)
+
+;; Make warning appear in smaller buffer
+(setq display-buffer-alist
+      '(("[*]Warnings[*]" .
+	 (display-buffer-in-side-window . '((side . bottom))))))
+
 ;; list the packages you want
 (setq package-list
       '(
+	eglot
 	better-defaults
 	elpy
 	flycheck
@@ -90,22 +102,25 @@
 	all-the-icons-dired
 	which-key
 	projectile
+	projectile-ripgrep
 	all-the-icons
 	all-the-icons-dired
 	doom-modeline
 	doom-themes
+	rust-mode
 	)
       )
 
 ;; install the missing packages
 (dolist (package package-list)
- (unless (package-installed-p package)
-   (package-install package)))
+  (unless (package-installed-p package)
+    (package-install package)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;  Copilot  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; Install straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -131,29 +146,23 @@
   :ensure t)
 ;; you can utilize :map :hook and :config to customize copilot
 
-;; Enable copilot globally
-(use-package copilot
-  :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))
-  ;; don't show in mode line
-  :diminish)
-
 ;; Github Copilot
 (defun cvh/no-copilot-mode ()
   "Helper for `cvh/no-copilot-modes'."
   (copilot-mode -1))
 
 (defvar cvh/no-copilot-modes '(shell-mode
-                              inferior-python-mode
-                              eshell-mode
-                              term-mode
-                              vterm-mode
-                              comint-mode
-                              compilation-mode
-                              debugger-mode
-                              dired-mode-hook
-                              compilation-mode-hook
-                              flutter-mode-hook
-                              minibuffer-mode-hook)
+			       inferior-python-mode
+                               eshell-mode
+                               term-mode
+                               vterm-mode
+                               comint-mode
+                               compilation-mode
+                               debugger-mode
+                               dired-mode-hook
+                               compilation-mode-hook
+                               flutter-mode-hook
+                               minibuffer-mode-hook)
   "Modes in which copilot is inconvenient.")
 
 (defun cvh/copilot-disable-predicate ()
@@ -176,14 +185,14 @@
   (if (and copilot-mode cvh/copilot-manual-mode)
       (progn
         (message "deactivating copilot")
-        (global-copilot-mode -1)
+        (copilot-mode -1)
         (setq cvh/copilot-manual-mode nil))
     (if copilot-mode
         (progn
           (message "activating copilot manual mode")
           (setq cvh/copilot-manual-mode t))
       (message "activating copilot mode")
-      (global-copilot-mode))))
+      (copilot-mode))))
 
 (define-key global-map (kbd "C-.") #'cvh/copilot-change-activation)
 
@@ -319,7 +328,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Enable flycheck
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-   (add-hook 'elpy-mode-hook 'flycheck-mode))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode)
@@ -374,6 +383,12 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
+;; Rust format on save
+(setq rust-format-on-save t)
+(add-hook 'rust-mode-hook
+          (lambda () (prettify-symbols-mode)))
+
+
 ;; Zig Mode
 (unless (version< emacs-version "24")
   (autoload 'zig-mode "zig-mode" nil t)
@@ -396,11 +411,11 @@ cleared, make sure the overlay doesn't come back too soon."
   ;; (company-begin-commands nif) ;; uncomment to disable popup
   :bind
   (:map company-active-map
-	      ("C-n". company-select-next-or-abort)
-	      ("C-p". company-select-previous)
-	      ;; ("M-<". company-select-first)
-	      ;; ("M->". company-select-last)))
-	      ))
+	("C-n". company-select-next-or-abort)
+	("C-p". company-select-previous)
+	;; ("M-<". company-select-first)
+	;; ("M->". company-select-last)))
+	))
 
 (use-package yasnippet
   :ensure
@@ -444,11 +459,11 @@ cleared, make sure the overlay doesn't come back too soon."
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 (customize-set-variable 'load-prefer-newer t)
- 
+
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (use-package fira-code-mode								  ;;
-  ;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
-  ;; :hook prog-mode)  								  ;;
+;; :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want ;;
+;; :hook prog-mode)  								  ;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun cvh/set-font-faces ()
   (message "Setting faces!")
@@ -483,12 +498,6 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Comment the line
 (global-set-key (kbd "C-;") 'comment-line)
 
-;; Set selected indent left
-(global-set-key (kbd "C-{") 'indent-rigidly-left-to-tab-stop)
-
-;; Set selected indent right
-(global-set-key (kbd "C-}") 'indent-rigidly-right-to-tab-stop)
-
 ;; Switch buffers fast
 (global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
 (global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
@@ -508,6 +517,71 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Immediately kill the focused buffer
 (global-unset-key (kbd "C-x k"))
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+;; Easily swith between windows in one buffer (split screen)
+(global-unset-key (kbd "C-x o"))
+(global-set-key (kbd "C-{") 'previous-window-any-frame)
+(global-set-key (kbd "C-}") 'next-window-any-frame)
+
+;; Switch buffers fast
+(global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
+(global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
+
+;; unset C-S-i so that it can be used to format buffer globally
+(global-unset-key (kbd "C-S-i"))
+
+;; Set C+; to toggle comment entire line
+(global-set-key (kbd "C-;") 'comment-line)
+
+;; Set C-<tab> to company-complete for only python-mode
+(global-set-key (kbd "C-<tab>") 'company-complete)
+
+;; Set C-' to xref-find-references in python-mode only
+;; (global-set-key (kbd "C-'") 'xref-find-references)
+(add-hook 'python-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") 'py-autopep8-buffer)
+	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
+
+;; unbind M-g M-n to go to flycheck next error
+(global-unset-key (kbd "M-g M-n"))
+(global-unset-key (kbd "M-g M-p"))
+(global-set-key (kbd "M-g M-n") 'flycheck-next-error)
+(global-set-key (kbd "M-g M-p") 'flycheck-previous-error)
+
+;; Multiple Cursors
+(global-set-key (kbd "C-S-z ") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this-dwim)
+(global-unset-key (kbd "C-<down-mouse-1>"))  ;; Just in case
+(global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
+(define-key mc/keymap (kbd "<return>") nil)  ;; Disable non-newline enter
+
+;; Delete line from cursor to beginning
+(global-set-key (kbd "S-<delete>") 'kill-whole-line)
+
+;; Immediately kill the focused buffer
+(global-unset-key (kbd "C-x k"))
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+;; Eldoc at point in rust-mode only; set C-i to eldoc-buffer-at-point
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-i") 'lsp-ui-doc-show)))
+
+;; Make shebang (#!) file executable when saved
+(add-hook 'after-save-hook
+	  #'executable-make-buffer-file-executable-if-script-p)
+
+(global-unset-key (kbd "C-r"))  ;; Just in case
+
+;; Set swiper-thing-at-point to C-r
+(global-set-key (kbd "C-r") 'swiper-thing-at-point)
+
+;; Select the entire word at point using mc--mark-symbol-at-point
+(global-set-key (kbd "C-<return>") 'mc--mark-symbol-at-point)
+
 
 
 ;; Setup Minted for pretty LaTeX code blocks in PDF's from org-mode
@@ -541,45 +615,8 @@ cleared, make sure the overlay doesn't come back too soon."
   :ensure t
   )
 
-
-
 ;; Disable the busted ass python-mypy checker
 (setq-default flycheck-disabled-checkers '(python-mypy))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;; Keybindings ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Easily swith between windows in one buffer (split screen)
-(global-unset-key (kbd "C-x o"))
-(global-set-key (kbd "C-{") 'previous-window-any-frame)
-(global-set-key (kbd "C-}") 'next-window-any-frame)
-
-;; Switch buffers fast
-(global-set-key (kbd "C-<prior>") 'switch-to-next-buffer)
-(global-set-key (kbd "C-<next>") 'switch-to-prev-buffer)
-
-;; unset C-S-i so that it can be used to format buffer globally
-(global-unset-key (kbd "C-S-i"))
-
-;; Set C+; to toggle comment entire line
-(global-set-key (kbd "C-;") 'comment-line)
-
-;; Set C-<tab> to company-complete for only python-mode
-(global-set-key (kbd "C-<tab>") 'company-complete)
-
-;; Set C-' to xref-find-references in python-mode only
-;; (global-set-key (kbd "C-'") 'xref-find-references)
-(add-hook 'python-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "C-S-i") 'py-autopep8-buffer)
-	    (local-set-key (kbd "C-'") 'lsp-ui-peek-find-references)))
-
-;; unbind M-g M-n to go to flycheck next error
-(global-unset-key (kbd "M-g M-n"))
-(global-unset-key (kbd "M-g M-p"))
-(global-set-key (kbd "M-g M-n") 'flycheck-next-error)
-(global-set-key (kbd "M-g M-p") 'flycheck-previous-error)
-
 
 ;; Format Python code with autopep8
 ;; Autopep8 execute
@@ -608,35 +645,16 @@ cleared, make sure the overlay doesn't come back too soon."
 	      (local-set-key (kbd "C-S-i") 'cvh/indent-buffer))
 	    t))
 
+;; if rust-mode is enabled, set C-S-i to rustfmt-buffer
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") 'lsp-format-buffer)))
+
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-c C-a") 'lsp-execute-code-action)))
+
 (require 'multiple-cursors)
-
-;; Multiple Cursors
-(global-set-key (kbd "C-S-z ") 'mc/edit-lines)
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this-dwim)
-(global-unset-key (kbd "C-<down-mouse-1>"))  ;; Just in case
-(global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
-(define-key mc/keymap (kbd "<return>") nil)  ;; Disable non-newline enter
-
-;; Delete line from cursor to beginning
-(global-set-key (kbd "S-<delete>") 'kill-whole-line)
-
-;; Immediately kill the focused buffer
-(global-unset-key (kbd "C-x k"))
-(global-set-key (kbd "C-x k") 'kill-this-buffer)
-
-;; Make shebang (#!) file executable when saved
-(add-hook 'after-save-hook
-	  #'executable-make-buffer-file-executable-if-script-p)
-
-(global-unset-key (kbd "C-r"))  ;; Just in case
-
-;; Set swiper-thing-at-point to C-r
-(global-set-key (kbd "C-r") 'swiper-thing-at-point)
-
-;; Select the entire word at point using mc--mark-symbol-at-point
-(global-set-key (kbd "C-<return>") 'mc--mark-symbol-at-point)
 
 ;; Enable hunspell
 (setq ispell-program-name "hunspell")
@@ -703,7 +721,7 @@ cleared, make sure the overlay doesn't come back too soon."
 	    )
 	  )
 
-	   
+
 
 ;; Autopep8 execute
 (setq py-autopep8-options '("--max-line-length=79"))
@@ -782,7 +800,7 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (define-key dired-mode-map (kbd "C-<") 'dired-single-up-directory)
   (define-key dired-mode-map (kbd "C-m") 'dired-single-buffer)
-	   )  
+  )  
 
 ;; Setup dired find file to open using custom program
 (use-package dired-open
@@ -807,9 +825,9 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Toggle visible dotfiles
 ;; (use-package dired-hide-dotfiles
-  ;; :hook (dired-mode . dired-hide-dotfiles-mode)
-  ;; :config
-  ;; (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
+;; :hook (dired-mode . dired-hide-dotfiles-mode)
+;; :config
+;; (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
 
 (setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
@@ -817,18 +835,18 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((emacs-lisp . t)
-        (java . t)
-        (sass . t)
-	(plantuml . t)
-        (matlab . t)
-        (C . t)
-        (js . t)
-        (latex . t)
-        (shell . t)
-        (python . t)
-	(rust . t)))
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (java . t)
+     (sass . t)
+     (plantuml . t)
+     (matlab . t)
+     (C . t)
+     (js . t)
+     (latex . t)
+     (shell . t)
+     (python . t)
+     (rust . t)))
 
   (setq org-confirm-babel-evaluate t)
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
@@ -837,13 +855,13 @@ cleared, make sure the overlay doesn't come back too soon."
   ;; This is needed as of Org 9.2
   (require 'org-tempo))
 
-  ;;(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-  ;;(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  ;;(add-to-list 'org-structure-template-alist '("py" . "src python")))
-  ;;(add-to-list 'org-structure-template-alist '("jv" . "src java"))
-  ;;(add-to-list 'org-structure-template-alist '("ss" . "src sass"))
-  ;;(add-to-list 'org-structure-template-alist '("js" . "src js"))
-  ;;(add-to-list 'org-structure-template-alist '("C" . "src C")))
+;;(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+;;(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+;;(add-to-list 'org-structure-template-alist '("py" . "src python")))
+;;(add-to-list 'org-structure-template-alist '("jv" . "src java"))
+;;(add-to-list 'org-structure-template-alist '("ss" . "src sass"))
+;;(add-to-list 'org-structure-template-alist '("js" . "src js"))
+;;(add-to-list 'org-structure-template-alist '("C" . "src C")))
 
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun cvh/org-babel-tangle-config ()
@@ -878,106 +896,106 @@ cleared, make sure the overlay doesn't come back too soon."
 
   ;; Mutiple sequences of list to represent present state
   (setq org-todo-keywords
-    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+	'((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+	  (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   (setq org-refile-targets
-    '(("Archive.org" :maxlevel . 1)
-      ("Tasks.org" :maxlevel . 1)))
+	'(("Archive.org" :maxlevel . 1)
+	  ("Tasks.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
   (setq org-tag-alist
-    '((:startgroup)
-       ; Put mutually exclusive tags here
-       (:endgroup)
-       ("@errand" . ?E)
-       ("@home" . ?H)
-       ("@work" . ?W)
-       ("agenda" . ?a)
-       ("planning" . ?p)
-       ("publish" . ?P)
-       ("batch" . ?b)
-       ("note" . ?n)
-       ("idea" . ?i)))
+	'((:startgroup)
+					; Put mutually exclusive tags here
+	  (:endgroup)
+	  ("@errand" . ?E)
+	  ("@home" . ?H)
+	  ("@work" . ?W)
+	  ("agenda" . ?a)
+	  ("planning" . ?p)
+	  ("publish" . ?P)
+	  ("batch" . ?b)
+	  ("note" . ?n)
+	  ("idea" . ?i)))
 
   ;; Configure custom agenda views
   (setq org-agenda-custom-commands
-   '(("d" "Dashboard"
-     ((agenda "" ((org-deadline-warning-days 7)))
-      (todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))
-      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+	'(("d" "Dashboard"
+	   ((agenda "" ((org-deadline-warning-days 7)))
+	    (todo "NEXT"
+		  ((org-agenda-overriding-header "Next Tasks")))
+	    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-    ("n" "Next Tasks"
-     ((todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))))
+	  ("n" "Next Tasks"
+	   ((todo "NEXT"
+		  ((org-agenda-overriding-header "Next Tasks")))))
 
-    ("W" "Work Tasks" tags-todo "+work-email")
+	  ("W" "Work Tasks" tags-todo "+work-email")
 
-    ;; Low-effort next actions
-    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-     ((org-agenda-overriding-header "Low Effort Tasks")
-      (org-agenda-max-todos 20)
-      (org-agenda-files org-agenda-files)))
+	  ;; Low-effort next actions
+	  ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+	   ((org-agenda-overriding-header "Low Effort Tasks")
+	    (org-agenda-max-todos 20)
+	    (org-agenda-files org-agenda-files)))
 
-    ("w" "Workflow Status"
-     ((todo "WAIT"
-            ((org-agenda-overriding-header "Waiting on External")
-             (org-agenda-files org-agenda-files)))
-      (todo "REVIEW"
-            ((org-agenda-overriding-header "In Review")
-             (org-agenda-files org-agenda-files)))
-      (todo "PLAN"
-            ((org-agenda-overriding-header "In Planning")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "BACKLOG"
-            ((org-agenda-overriding-header "Project Backlog")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "READY"
-            ((org-agenda-overriding-header "Ready for Work")
-             (org-agenda-files org-agenda-files)))
-      (todo "ACTIVE"
-            ((org-agenda-overriding-header "Active Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "COMPLETED"
-            ((org-agenda-overriding-header "Completed Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "CANC"
-            ((org-agenda-overriding-header "Cancelled Projects")
-             (org-agenda-files org-agenda-files)))))))
+	  ("w" "Workflow Status"
+	   ((todo "WAIT"
+		  ((org-agenda-overriding-header "Waiting on External")
+		   (org-agenda-files org-agenda-files)))
+	    (todo "REVIEW"
+		  ((org-agenda-overriding-header "In Review")
+		   (org-agenda-files org-agenda-files)))
+	    (todo "PLAN"
+		  ((org-agenda-overriding-header "In Planning")
+		   (org-agenda-todo-list-sublevels nil)
+		   (org-agenda-files org-agenda-files)))
+	    (todo "BACKLOG"
+		  ((org-agenda-overriding-header "Project Backlog")
+		   (org-agenda-todo-list-sublevels nil)
+		   (org-agenda-files org-agenda-files)))
+	    (todo "READY"
+		  ((org-agenda-overriding-header "Ready for Work")
+		   (org-agenda-files org-agenda-files)))
+	    (todo "ACTIVE"
+		  ((org-agenda-overriding-header "Active Projects")
+		   (org-agenda-files org-agenda-files)))
+	    (todo "COMPLETED"
+		  ((org-agenda-overriding-header "Completed Projects")
+		   (org-agenda-files org-agenda-files)))
+	    (todo "CANC"
+		  ((org-agenda-overriding-header "Cancelled Projects")
+		   (org-agenda-files org-agenda-files)))))))
 
   (setq org-capture-templates
-    `(("t" "Tasks / Projects")
-      ("tt" "Task" entry (file+olp "~/Org_mode/Tasks.org" "Inbox")
+	`(("t" "Tasks / Projects")
+	  ("tt" "Task" entry (file+olp "~/Org_mode/Tasks.org" "Inbox")
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-      ("j" "Journal Entries")
-      ("jj" "Journal" entry
+	  ("j" "Journal Entries")
+	  ("jj" "Journal" entry
            (file+olp+datetree "~/Org_mode/Journal.org")
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
            ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
            :clock-in :clock-resume
            :empty-lines 1)
-      ("jm" "Meeting" entry
+	  ("jm" "Meeting" entry
            (file+olp+datetree "~/Org_mode/Meeting.org")
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
 
-      ("w" "Workflows")
-      ("we" "Checking Email" entry (file+olp+datetree "~/Org_mode/Journal.org")
+	  ("w" "Workflows")
+	  ("we" "Checking Email" entry (file+olp+datetree "~/Org_mode/Journal.org")
            "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
-      ("m" "Metrics Capture")
-      ("mw" "Weight" table-line (file+headline "~/Org_mode/Metrics.org" "Weight")
-       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+	  ("m" "Metrics Capture")
+	  ("mw" "Weight" table-line (file+headline "~/Org_mode/Metrics.org" "Weight")
+	   "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
   (define-key global-map (kbd "C-c j")
-    (lambda () (interactive) (org-capture nil "jj"))))
+	      (lambda () (interactive) (org-capture nil "jj"))))
 
 (defun cvh/org-font-setup ()
   ;; Replace list hyphen with dot
@@ -1005,8 +1023,8 @@ cleared, make sure the overlay doesn't come back too soon."
   (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch))
-  ;;(set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-  ;;(set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+;;(set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+;;(set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (defun cvh/org-mode-setup ()
   (org-indent-mode)
@@ -1028,7 +1046,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package magit
   :commands magit-status)
-  ;;:custom
+;;:custom
 ;;(magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 (use-package forge
@@ -1074,7 +1092,7 @@ cleared, make sure the overlay doesn't come back too soon."
   (eshell-git-prompt-use-theme 'powerline))
 
 (use-package helpful
-;;  :ensure t  ;; Redundant
+  ;;  :ensure t  ;; Redundant
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -1110,7 +1128,7 @@ cleared, make sure the overlay doesn't come back too soon."
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
          ("C-p" . ivy-previous-line))
-         ;; ("C-r" . ivy-reverse-i-search-kill))
+  ;; ("C-r" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
@@ -1181,20 +1199,20 @@ cleared, make sure the overlay doesn't come back too soon."
            (setq doom-modeline-irc t)
            (setq doom-modeline-irc-stylize 'identity)
            (setq doom-modeline-env-version t)
-;;           (setq doom-modeline-env-python-executable "python") ; or `python-shell-interpreter'
+	   ;;           (setq doom-modeline-env-python-executable "python") ; or `python-shell-interpreter'
            (setq doom-modeline-env-go-executable "go")
            (setq doom-modeline-env-load-string "...")))
 
 ;; (use-package general
-  ;; :config
-  ;; (general-create-definer cvh/leader-keys
-    ;; :keymaps '(normal insert visual emacs)
-    ;; :prefix "m"
-    ;; :global-prefix "M-m")
+;; :config
+;; (general-create-definer cvh/leader-keys
+;; :keymaps '(normal insert visual emacs)
+;; :prefix "m"
+;; :global-prefix "M-m")
 
-  ;; (cvh/leader-keys
-    ;; "t" '(:ignore t :which-key "choose theme")
-    ;; "tt" '(counsel-load-theme :which-key "choose theme")))
+;; (cvh/leader-keys
+;; "t" '(:ignore t :which-key "choose theme")
+;; "tt" '(counsel-load-theme :which-key "choose theme")))
 
 ;; Make parenthesie life easier
 (use-package rainbow-delimiters
@@ -1262,7 +1280,7 @@ cleared, make sure the overlay doesn't come back too soon."
     (setq-local buffer-save-without-query t))
   (add-hook 'before-save-hook 'lsp-format-buffer nil t))
 
-  
+
 ;; Disable warnings on cargo test
 (setq rustic-cargo-test-disable-warnings t)
 
@@ -1305,7 +1323,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;   (require 'dap-python))
 
 ;; (use-package lsp-jedi
-  ;; :ensure t)
+;; :ensure t)
 
 (use-package pyvenv
   :after python-mode
@@ -1313,17 +1331,17 @@ cleared, make sure the overlay doesn't come back too soon."
   (pyvenv-mode 1))
 
 (use-package lsp-java
-:mode "\\.java\\'"
-:hook (java-mode . lsp))
+  :mode "\\.java\\'"
+  :hook (java-mode . lsp))
 
 (add-to-list 'auto-mode-alist
 	     '("\\.cpp\\'" . c++-mode))
 
 (use-package bash-completion
-:mode "\\.sh\\'"
-:hook (shell-mode . lsp-deferred)
-:config
-(setq lsp-bash-highlight-parsing-errors t))
+  :mode "\\.sh\\'"
+  :hook (shell-mode . lsp-deferred)
+  :config
+  (setq lsp-bash-highlight-parsing-errors t))
 
 (use-package typescript-mode
   :mode "\\.ts\\'"

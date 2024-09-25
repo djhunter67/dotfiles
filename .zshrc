@@ -341,3 +341,10 @@ unset ZSH_AUTOSUGGEST_USE_ASYNC
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
+# bun completions
+[ -s "/home/djhunter67/.bun/_bun" ] && source "/home/djhunter67/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
