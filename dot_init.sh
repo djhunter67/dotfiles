@@ -19,6 +19,7 @@ set -e
 
 # packages to install
 PACKAGES=(
+    "linux-headers"
     "rsync"
     "wakatime"
     "v4l2loopback-dkms"

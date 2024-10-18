@@ -29,6 +29,7 @@
         ("org"  .  "https://orgmode.org/elpa/")
         ("elpa" . "https://elpa.gnu.org/packages/")))
 
+
 ;; Prevent package.el loading packages prior to init-file loading.
 (setq package-enable-at-startup nil)
 
@@ -75,7 +76,7 @@
 	multiple-cursors
 	ivy-yasnippet
 	company
-	prettier
+	prettier-js
 	flymake-ruff
 	ivy-posframe
 	origami
@@ -95,7 +96,6 @@
 	ivy-posframe
 	lsp-origami
 	nyan-mode
-	dired-single
 	dired-open
 	auto-package-update
 	rainbow-delimiters
@@ -108,6 +108,9 @@
 	doom-modeline
 	doom-themes
 	rust-mode
+	syntactic-close
+	drag-stuff
+	rjsx-mode
 	)
       )
 
@@ -314,21 +317,13 @@ cleared, make sure the overlay doesn't come back too soon."
   (define-key origami-mode-map (kbd "C-c f") 'origami-recursively-toggle-node)
   (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes))
 
-
-
-;; Get and enable 
-(use-package elpy
-  :ensure t
-  :init
-  (elpy-enable))
-
-
 (require 'flymake-ruff)
 (add-hook 'python-mode-hook #'flymake-ruff-load)
 ;; Enable flycheck
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+;; (when (require 'flycheck nil t)
+;;   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+;;   (add-hook 'elpy-mode-hook 'flycheck-mode))
+
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode)
@@ -533,7 +528,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Set C+; to toggle comment entire line
 (global-set-key (kbd "C-;") 'comment-line)
 
-;; Set C-<tab> to company-complete for only python-mode
+;; Set C-<tab> to company-complete for lsp complete
 (global-set-key (kbd "C-<tab>") 'company-complete)
 
 ;; Set C-' to xref-find-references in python-mode only
@@ -563,7 +558,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Immediately kill the focused buffer
 (global-unset-key (kbd "C-x k"))
-(global-set-key (kbd "C-x k") 'kill-this-buffer)
+(global-set-key (kbd "C-x k") 'kill-current-buffer)
 
 ;; Eldoc at point in rust-mode only; set C-i to eldoc-buffer-at-point
 (add-hook 'rust-mode-hook
@@ -654,6 +649,10 @@ cleared, make sure the overlay doesn't come back too soon."
 	  (lambda ()
 	    (local-set-key (kbd "C-c C-a") 'lsp-execute-code-action)))
 
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "<tab>") 'indent-for-tab-command)))
+
 (require 'multiple-cursors)
 
 ;; Enable hunspell
@@ -721,15 +720,6 @@ cleared, make sure the overlay doesn't come back too soon."
 	    )
 	  )
 
-
-
-;; Autopep8 execute
-(setq py-autopep8-options '("--max-line-length=79"))
-(define-key python-mode-map (kbd "C-S-i") 'py-autopep8-buffer) ;; prev defined
-;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (scroll-bar-mode -1)        ;; Disable visible scrollbar
@@ -737,6 +727,23 @@ cleared, make sure the overlay doesn't come back too soon."
 (tooltip-mode -1)           ;; Disable tooltips
 (set-fringe-mode 10)        ;; Give some breathing room
 (menu-bar-mode -1)          ;; Disable the menu bar
+
+;; Go directly to emacs config
+;; Open .emacs with C-x c
+(defun dotemacs () (interactive) (switch-to-buffer (find-file-noselect "~/dotfiles/.emacs")))
+(global-set-key (kbd "C-x c") 'dotemacs)
+
+;; Visual line mode everywhere, please
+(global-visual-line-mode t)
+
+;; Show the matching parenthesis
+(show-paren-mode 1)
+
+(global-unset-key (kbd "C-]"))
+
+;; Syntactic close
+;; https://github.com/emacs-berlin/syntactic-close
+(global-set-key (kbd "C-]") 'syntactic-close)
 
 ;; Set up the visible bell
 (setq visible-bell t)
@@ -766,6 +773,60 @@ cleared, make sure the overlay doesn't come back too soon."
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+(global-unset-key (kbd "C-<delete>"))
+
+;; https://stackoverflow.com/questions/17958397/emacs-delete-whitespaces-or-a-word
+(defun kill-whitespace-or-word ()
+  (interactive)
+  (if (looking-at "[ \t\n]")
+      (let ((p (point)))
+        (re-search-forward "[^ \t\n]" nil :no-error)
+        (backward-char)
+        (kill-region p (point)))
+    (kill-word 1)))
+(global-set-key (kbd "C-<delete>") 'kill-whitespace-or-word)
+
+;; Drag-stuff - Drag lines and regions
+(drag-stuff-global-mode 1)
+;; Use C-S-up/down
+(setq drag-stuff-modifier '(control shift))
+(define-key drag-stuff-mode-map (drag-stuff--kbd 'up) 'drag-stuff-up)
+(define-key drag-stuff-mode-map (drag-stuff--kbd 'down) 'drag-stuff-down)
+
+;; Duplicate line with C-S-d
+(defun duplicate-current-line-or-region (arg)
+  "Duplicates the current line or region ARG times.
+If there's no region, the current line will be duplicated. However, if
+there's a region, all lines that region covers will be duplicated."
+  (interactive "p")
+  (let (beg end (origin (point)))
+    (if (and mark-active (> (point) (mark)))
+        (exchange-point-and-mark))
+    (setq beg (line-beginning-position))
+    (if mark-active
+        (exchange-point-and-mark))
+    (setq end (line-end-position))
+    (let ((region (buffer-substring-no-properties beg end)))
+      (dotimes (i arg)
+        (goto-char end)
+        (newline)
+        (insert region)
+        (setq end (point)))
+      (goto-char (+ origin (* (length region) arg) arg)))))
+(global-set-key (kbd "C-S-d") 'duplicate-current-line-or-region)
+
+;; Skip system buffers when cycling
+(set-frame-parameter (selected-frame) 'buffer-predicate
+		     (lambda (buf) (not (string-match-p "^*" (buffer-name buf)))))
+
+;; Spell check
+(global-set-key (kbd "<f6>") 'flyspell-mode)
+
+;; Spell check with hunspell
+(when (executable-find "hunspell")
+  (setq-default ispell-program-name "hunspell")
+  (setq ispell-really-hunspell t))
+
 ;;  A doom theme
 (use-package doom-themes
   :init (load-theme 'doom-dark+ t))
@@ -789,7 +850,7 @@ cleared, make sure the overlay doesn't come back too soon."
 (setq delete-by-moving-to-trash t)
 
 ;; Keep dired to one buffer
-(use-package dired-single)
+;; (use-package dired-single)
 
 ;; Configure dired
 (use-package dired
@@ -829,7 +890,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; :config
 ;; (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
 
-(setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
+(setq org-plantuml-jar-path (expand-file-name "/home/$USER/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 
@@ -1325,6 +1386,15 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; (use-package lsp-jedi
 ;; :ensure t)
 
+;; Enable Elpy for Python development
+;; https://elpy.readthedocs.io/en/latest/
+(setq elpy-rpc-python-command "python3")
+(elpy-enable)
+
+;; Run black on save
+(add-hook 'elpy-mode-hook (lambda ()
+  (add-hook 'before-save-hook 'elpy-black-fix-code nil t)))
+
 (use-package pyvenv
   :after python-mode
   :config
@@ -1333,6 +1403,25 @@ cleared, make sure the overlay doesn't come back too soon."
 (use-package lsp-java
   :mode "\\.java\\'"
   :hook (java-mode . lsp))
+
+;; Add a hook for javascript mode to enable company
+(add-hook 'js-mode-hook 'company-mode)
+(add-hook 'js-mode-hook 'flycheck-mode)
+(add-hook 'js-mode-hook 'prettier-js-mode)
+(add-hook 'js-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") 'prettier-js)))
+
+(with-eval-after-load 'js
+  (define-key js-mode-map (kbd "M-.") nil))
+
+
+(setq js-indent-level 2)
+
+;; Pretty JS code
+;; https://github.com/prettier/prettier-emacs
+(require 'prettier-js)
+(add-hook 'js2-mode-hook 'prettier-js-mode)
 
 (add-to-list 'auto-mode-alist
 	     '("\\.cpp\\'" . c++-mode))
