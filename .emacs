@@ -4,7 +4,7 @@
 
 ;;; Code:
 ;; The default is 800 kilobytes.  Measured in bytes.
-(setq gc-cons-threshold 1000)  ;; 1Mb
+(setq gc-cons-threshold 100000)  ;; 100Mb
 
 ;; Increase the amount of data which Emacs reads from the process
 (setq read-process-output-max (* 1024 1024)) ;; 1mb

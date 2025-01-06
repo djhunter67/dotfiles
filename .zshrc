@@ -142,16 +142,16 @@ export TERM=xterm
 alias Ripley='ssh root@192.168.110.24'
 alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
-alias webcam="sudo modprobe v4l2loopback exclusive_caps=1 max_buffers=2; pkill -f gphoto2; gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 4 -f v4l2 /dev/video0"
+alias webcam="sudo modprobe v4l2loopback devices=2 video_nr=10,9 card_larbe="Canon","Android" exclusive_caps=1  max_buffers=2; pkill -f gphoto2; gphoto2 --stdout --set-config liveviewsize=0 --capture-movie | ffmpeg -y -hwaccel cuda -hwaccel_output_format cuda -i - -c:v copy -f v4l2 /dev/video0"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
-alias l="ls -lFh --color=auto"
-alias ll="pls --align --multi-cols -d group -d size -d atime -u decimal -s atime --dirs --files"
+alias l="ls -lFhg --color=auto"
+alias ll="~/.local/bin/pls -d group -d size -d atime -u decimal -s atime"
 alias icat="kitty +kitten icat"
-alias la="pls -a -d -s mtime -u decimal -i nerd -c --no-dirs"
-alias dif="kitty +kitten diff"
+alias la="~/.local/bin/pls -a -d -s mtime -u decimal -i nerd -c --no-dirs"
+# alias dif="kitty +kitten diff"
 
 # cd into the old directory
 #

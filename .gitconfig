@@ -1,7 +1,7 @@
 [user]
 	name = Christerpher Hunter
 	email = djhunter67@gmail.com
-	signingkey = /home/djhunter67/.ssh/id_ed25519_commit_key.pub
+	signingkey = C26FBEFC6DDB3661
 [credential]
 	helper = cache --timeout=10800000
 [color]
@@ -23,10 +23,8 @@
 
 [push]
 	autoSetupRemote = true
-	followTags = true
 [gpg]
 	program = gpg2
-	format = ssh
 [commit]
 	gpgsign = true
 [tag]

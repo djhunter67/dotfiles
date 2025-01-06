@@ -57,7 +57,7 @@ PACKAGES=(
     "pls"
     "awesome-terminal-fonts"
     "ttf-firacode"
-    "kitty"
+    "ghostty"
     "rust-analyzer"
     "texlive-fontsrecommended"
     "pandoc"
@@ -71,6 +71,7 @@ PACKAGES=(
     "libreoffice-still"
     "hunspell"
     "wget"
+    "prettier"
 )
 
 

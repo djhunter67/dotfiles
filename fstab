@@ -1,0 +1,40 @@
+# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+# /dev/nvme0n1p2
+UUID=89ef0c99-a535-4865-92ab-e191cef817e3	/         	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=256,subvol=/@	0 0
+
+# /dev/nvme0n1p1
+UUID=8A22-405D      	/boot     	vfat      	rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro	0 2
+
+# /dev/nvme0n1p2
+UUID=89ef0c99-a535-4865-92ab-e191cef817e3	/.snapshots	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=260,subvol=/@.snapshots	0 0
+
+# /dev/nvme0n1p2
+UUID=89ef0c99-a535-4865-92ab-e191cef817e3	/home     	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=257,subvol=/@home	0 0
+
+# /dev/nvme0n1p2
+UUID=89ef0c99-a535-4865-92ab-e191cef817e3	/var/cache/pacman/pkg	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=259,subvol=/@pkg	0 0
+
+# /dev/nvme0n1p2
+UUID=89ef0c99-a535-4865-92ab-e191cef817e3	/var/log  	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=258,subvol=/@log	0 0
+
+# /dev/sdh2
+# UUID=586C521F6C51F7E8 /home/djhunter67/FILES  ntfs-3g uid=1000,gid=1000,umask=027 0 2
+# /dev/nvme1n1p1 - Pictures
+UUID=6c1bdafb-f223-4991-8203-253ac80b4fbf      /home/djhunter67/Pictures       btrfs   rw,noatime,discard,ssd,space_cache=v2   0 0
+# /dev/nvme1n1p2 - Videos
+UUID=3b9709e4-2dea-4141-946f-d44298754104      /home/djhunter67/Videos         btrfs   rw,noatime,discard,ssd,space_cache=v2   0 0
+# /dev/sd{e,f,g} RAID0 - Downloads
+# UUID=3d26e542-46cd-40a3-893d-0c31273a76c2      /home/djhunter67/Downloads      btrfs   rw,noatime,nossd,autodefrag,compress=zstd:1,space_cache=v2      0 0
+
+# logging to RAM
+systemd_journal		/var/log/journal	tmpfs	defaults,size=16G	0 0
+package_archive		/var/cache/pacman	tmpfs	defaults,size=16G	0 0
+
+# Ramdisk
+none /home/djhunter67/.BUILDS	tmpfs	rw,size=10G 0 0
+
+# /dev/sda
+#UUID=6e834c7c-855a-426b-8d28-92983224ad7d	/home/djhunter67/Downloads	btrfs	rw,discard,ssd,space_cache=v2   0 0
