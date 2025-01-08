@@ -148,9 +148,9 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias l="ls -lFhg --color=auto"
-alias ll="~/.local/bin/pls -d group -d size -d atime -u decimal -s atime"
+alias ll="/usr/bin/pls -d group -d size -d atime -u decimal -s atime"
 alias icat="kitty +kitten icat"
-alias la="~/.local/bin/pls -a -d -s mtime -u decimal -i nerd -c --no-dirs"
+alias la="/usr/bin/pls -a -d -s mtime -u decimal -i nerd -c --no-dirs"
 # alias dif="kitty +kitten diff"
 
 # cd into the old directory
