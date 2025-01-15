@@ -1,3 +1,4 @@
+#!/bin/zsh
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -5,24 +6,16 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-#!/bin/zsh
-
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-# fi
-
 # Stop script of any command return non-zero
 # set -e
 
-#zsh_theme="powerlevel10k/powerlevel10k"
+zsh_theme="powerlevel10k/powerlevel10k"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-#[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# export LC_CTYPE="en_US.UTF-8"
+export LC_CTYPE="en_US.UTF-8"
+export EDITOR="emacs"
 
 ###########################
 plugins=(
@@ -142,7 +135,7 @@ export TERM=xterm
 alias Ripley='ssh root@192.168.110.24'
 alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
-alias webcam="sudo modprobe v4l2loopback devices=2 video_nr=10,9 card_larbe="Canon","Android" exclusive_caps=1  max_buffers=2; pkill -f gphoto2; gphoto2 --stdout --set-config liveviewsize=0 --capture-movie | ffmpeg -y -hwaccel cuda -hwaccel_output_format cuda -i - -c:v copy -f v4l2 /dev/video0"
+alias webcam="sudo modprobe v4l2loopback devices=2 video_nr=10,9 card_larbe="Canon","Android" exclusive_caps=1  max_buffers=2; pkill -f gphoto2; gphoto2 --stdout --set-config liveviewsize=0 --capture-movie | ffmpeg -y -hwaccel cuda -hwaccel_output_format cuda -i - -c:v copy -f v4l2 /dev/video10"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
@@ -330,6 +323,9 @@ EOT
 }
 
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+
+eval "$(ssh-agent -s)" &> /dev/null
+ssh-add ~/.ssh/id_ed25519_base_key &> /dev/null
 
 # Lines configured by zsh-newuser-install
 setopt beep extendedglob nomatch

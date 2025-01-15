@@ -852,6 +852,7 @@ there's a region, all lines that region covers will be duplicated."
 ;; Keep dired to one buffer
 ;; (use-package dired-single)
 
+
 ;; Configure dired
 (use-package dired
   :ensure nil
