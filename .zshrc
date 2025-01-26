@@ -57,7 +57,7 @@ export KITTY_CONFIG_DIRECTORY="$HOME/.config/kitty/kitty.conf"
 
 # Increase Bash history size. Allow 32³ entries; the default is 500.
 #
-HISTFILE=~/.zsh_history
+HISTFILE=~/.zsh_history_bak
 HISTSIZE=32768
 SAVEHIST=30000
 HISTFILESIZE="${HISTSIZE}"
@@ -135,7 +135,7 @@ export TERM=xterm
 alias Ripley='ssh root@192.168.110.24'
 alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
-alias webcam="sudo modprobe v4l2loopback devices=2 video_nr=10,9 card_larbe="Canon","Android" exclusive_caps=1  max_buffers=2; pkill -f gphoto2; gphoto2 --stdout --set-config liveviewsize=0 --capture-movie | ffmpeg -y -hwaccel cuda -hwaccel_output_format cuda -i - -c:v copy -f v4l2 /dev/video10"
+alias webcam="sudo modprobe v4l2loopback exclusive_caps=1  max_buffers=2; pkill -f gphoto2; gphoto2 --stdout --set-config liveviewsize=0 --capture-movie | ffmpeg -y -hwaccel cuda -hwaccel_output_format cuda -i - -c:v copy -f v4l2 /dev/video0"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
