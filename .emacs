@@ -315,7 +315,10 @@ cleared, make sure the overlay doesn't come back too soon."
   :config
   (global-origami-mode)
   (define-key origami-mode-map (kbd "C-c f") 'origami-recursively-toggle-node)
-  (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes))
+  (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes)
+  (define-key origami-mode-map (kbd "C-c t") 'origami-toggle-node)
+  (define-key origami-mode-map (kbd "C-c r") 'origami-reset)
+  (define-key origami-mode-map (kbd "C-c u") 'origami-undo))
 
 (require 'flymake-ruff)
 (add-hook 'python-mode-hook #'flymake-ruff-load)

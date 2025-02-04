@@ -208,7 +208,18 @@ fi
 # Link gitconfig
 if [[ -L "$HOME/.gitconfig" ]]; then
     rm $HOME/.gitconfig
-    ln -s $HOME/dotfiles/.gitconfig $HOME/.gitconfig
+    cp $HOME/dotfiles/.gitconfig $HOME/.gitconfig
+
+    echo "Setting up GPG key"
+    gpg2 --full-generate-key
+
+    gpg2 --list-secret-keys --keyid-format=long | awk '/^sec / {split($2, a, "/"); print a[2]}' | git config --global user.signingkey
+
+    gpg2 --list-secret-keys --keyid-format=long | awk '/^sec / {split($2, a, "/"); print a[2]}' | gpg2 --armor --export > $HOME/public_key.asc
+
+    echo "Press Enter to continue"
+    read -n 1 -p $'\x0A'
+    echo "Continuing script"        
 fi
 
 if [[ ! -d "$HOME/.BUILDS" ]]; then

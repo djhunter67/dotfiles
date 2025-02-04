@@ -1,7 +1,7 @@
 [user]
 	name = Christerpher Hunter
 	email = djhunter67@gmail.com
-	signingkey = 2981D2853424D128
+	signingkey = 0
 [credential]
 	helper = cache --timeout=10800000
 [color]
@@ -20,7 +20,6 @@
 	defaultBranch = trunk
 [pull]
 	rebase = true
-
 [push]
 	autoSetupRemote = true
 [gpg]
