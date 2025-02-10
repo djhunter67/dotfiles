@@ -77,120 +77,126 @@
 ;;;;;;;;;;;;;;;;; Co-Pilot ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Install straight.el
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-	(url-retrieve-synchronously
-	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	 'silent 'inhibit-cookies)
-      (goto-char (point-max))))
-  (load bootstrap-file nil 'nomessage))
-
-
-(use-package copilot
-  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :ensure t)
-;; you can utilize :map :hook and :config to customize copilot
-
-;; Github Copilot
-(defun cvh/no-copilot-mode ()
-  "Helper for `cvh/no-copilot-modes'."
-  (copilot-mode -1))
-
-(defvar cvh/no-copilot-modes '(shell-mode
-			      inferior-python-mode
-                              eshell-mode
-                              term-mode
-                              vterm-mode
-                              comint-mode
-                              compilation-mode
-                              debugger-mode
-                              dired-mode-hook
-                              compilation-mode-hook
-                              flutter-mode-hook
-                              minibuffer-mode-hook)
-  "Modes in which copilot is inconvenient.")
-
-(defun cvh/copilot-disable-predicate ()
-  "When copilot should not automatically show completions."
-  (or cvh/copilot-manual-mode
-      (member major-mode cvh/no-copilot-modes)
-      (company--active-p)))
-
-(add-to-list 'copilot-disable-predicates #'cvh/copilot-disable-predicate)
-
-(defvar cvh/copilot-manual-mode nil
-  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
-
-(defun cvh/copilot-change-activation ()
-  "Switch between three activation modes:
-- automatic: copilot will automatically overlay completions
-- manual: you need to press a key (M-C-<return>) to trigger completions
-- off: copilot is completely disabled."
-  (interactive)
-  (if (and copilot-mode cvh/copilot-manual-mode)
-      (progn
-        (message "deactivating copilot")
-        (global-copilot-mode -1)
-        (setq cvh/copilot-manual-mode nil))
-    (if copilot-mode
-        (progn
-          (message "activating copilot manual mode")
-          (setq cvh/copilot-manual-mode t))
-      (message "activating copilot mode")
-      (global-copilot-mode))))
-
-(define-key global-map (kbd "C-.") #'cvh/copilot-change-activation)
-
-(defun cvh/copilot-complete-or-accept ()
-  "Command that either triggers a completion or accepts one if one
-is available. Useful if you tend to hammer your keys like I do."
-  (interactive)
-  (if (copilot--overlay-visible)
-      (progn
-        (copilot-accept-completion)
-        (open-line 1)
-        (next-line))
-    (copilot-complete)))
-
-(define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
-(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion) 
-(define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "M-C-=") #'copilot-accept-completion-by-line)
-(define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)
-
-(defun cvh/copilot-tab ()
-  "Tab command that will complet with copilot if a completion is
-available. Otherwise will try company, yasnippet or normal
-tab-indent."
-  (interactive)
-  (or   
-   (company-complete)
-   (indent-for-tab-command)))
-
-;; (define-key global-map (kbd "<tab>") #'cvh/copilot-tab)
-
-(defun cvh/copilot-quit ()
-  "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
-cleared, make sure the overlay doesn't come back too soon."
-  (interactive)
-  (condition-case err
-      (when copilot--overlay
-        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
-          (setq copilot-disable-predicates (list (lambda () t)))
-          (copilot-clear-overlay)
-          (run-with-idle-timer
-           1.0
-           nil
-           (lambda ()
-             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
-    (error handler)))
-
-(advice-add 'keyboard-quit :before #'cvh/copilot-quit)
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defvar bootstrap-version)									      ;;
+;; (let ((bootstrap-file									      ;;
+;;        (expand-file-name "straight.el/bootstrap.el" user-emacs-directory))			      ;;
+;;       (bootstrap-version 6))									      ;;
+;;   (unless (file-exists-p bootstrap-file)							      ;;
+;;     (with-current-buffer									      ;;
+;; 	(url-retrieve-synchronously								      ;;
+;; 	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"	      ;;
+;; 	 'silent 'inhibit-cookies)								      ;;
+;;       (goto-char (point-max))))								      ;;
+;;   (load bootstrap-file nil 'nomessage))							      ;;
+;; 												      ;;
+;; (use-package copilot										      ;;
+;;   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))			      ;;
+;;   :ensure t)											      ;;
+;; ;; you can utilize :map :hook and :config to customize copilot				      ;;
+;; 												      ;;
+;; ;; Enable copilot globally									      ;;
+;; (use-package copilot										      ;;
+;;   :load-path (lambda () (expand-file-name "copilot.el" user-emacs-directory))		      ;;
+;;   ;; don't show in mode line									      ;;
+;;   :diminish)											      ;;
+;; 												      ;;
+;; ;; Github Copilot										      ;;
+;; (defun cvh/no-copilot-mode ()								      ;;
+;;   "Helper for `cvh/no-copilot-modes'."							      ;;
+;;   (copilot-mode -1))										      ;;
+;; 												      ;;
+;; (defvar cvh/no-copilot-modes '(shell-mode							      ;;
+;;                               inferior-python-mode						      ;;
+;;                               eshell-mode							      ;;
+;;                               term-mode							      ;;
+;;                               vterm-mode							      ;;
+;;                               comint-mode							      ;;
+;;                               compilation-mode						      ;;
+;;                               debugger-mode							      ;;
+;;                               dired-mode-hook						      ;;
+;;                               compilation-mode-hook						      ;;
+;;                               flutter-mode-hook						      ;;
+;;                               minibuffer-mode-hook)						      ;;
+;;   "Modes in which copilot is inconvenient.")							      ;;
+;; 												      ;;
+;; (defun cvh/copilot-disable-predicate ()							      ;;
+;;   "When copilot should not automatically show completions."					      ;;
+;;   (or cvh/copilot-manual-mode								      ;;
+;;       (member major-mode cvh/no-copilot-modes)						      ;;
+;;       (company--active-p)))									      ;;
+;; 												      ;;
+;; (add-to-list 'copilot-disable-predicates #'cvh/copilot-disable-predicate)			      ;;
+;; 												      ;;
+;; (defvar cvh/copilot-manual-mode nil								      ;;
+;;   "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")	      ;;
+;; 												      ;;
+;; (defun cvh/copilot-change-activation ()							      ;;
+;;   "Switch between three activation modes:							      ;;
+;; - automatic: copilot will automatically overlay completions					      ;;
+;; - manual: you need to press a key (M-C-<return>) to trigger completions			      ;;
+;; - off: copilot is completely disabled."							      ;;
+;;   (interactive)										      ;;
+;;   (if (and copilot-mode cvh/copilot-manual-mode)						      ;;
+;;       (progn											      ;;
+;;         (message "deactivating copilot")							      ;;
+;;         (global-copilot-mode -1)								      ;;
+;;         (setq cvh/copilot-manual-mode nil))							      ;;
+;;     (if copilot-mode										      ;;
+;;         (progn										      ;;
+;;           (message "activating copilot manual mode")						      ;;
+;;           (setq cvh/copilot-manual-mode t))							      ;;
+;;       (message "activating copilot mode")							      ;;
+;;       (global-copilot-mode))))								      ;;
+;; 												      ;;
+;; (define-key global-map (kbd "C-.") #'cvh/copilot-change-activation)				      ;;
+;; 												      ;;
+;; (defun cvh/copilot-complete-or-accept ()							      ;;
+;;   "Command that either triggers a completion or accepts one if one				      ;;
+;; is available. Useful if you tend to hammer your keys like I do."				      ;;
+;;   (interactive)										      ;;
+;;   (if (copilot--overlay-visible)								      ;;
+;;       (progn											      ;;
+;;         (copilot-accept-completion)								      ;;
+;;         (open-line 1)									      ;;
+;;         (next-line))										      ;;
+;;     (copilot-complete)))									      ;;
+;; 												      ;;
+;; (define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)			      ;;
+;; (define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion) 		      ;;
+;; (define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)	      ;;
+;; (define-key copilot-mode-map (kbd "M-C-=") #'copilot-accept-completion-by-line)		      ;;
+;; (define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)			      ;;
+;; 												      ;;
+;; (defun cvh/copilot-tab ()									      ;;
+;;   "Tab command that will complet with copilot if a completion is				      ;;
+;; available. Otherwise will try company, yasnippet or normal					      ;;
+;; tab-indent."											      ;;
+;;   (interactive)										      ;;
+;;   (or   											      ;;
+;;    (company-complete)									      ;;
+;;    (indent-for-tab-command)))								      ;;
+;; 												      ;;
+;; ;; (define-key global-map (kbd "<tab>") #'cvh/copilot-tab)					      ;;
+;; 												      ;;
+;; (defun cvh/copilot-quit ()									      ;;
+;;   "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is				      ;;
+;; cleared, make sure the overlay doesn't come back too soon."					      ;;
+;;   (interactive)										      ;;
+;;   (condition-case err									      ;;
+;;       (when copilot--overlay									      ;;
+;;         (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))		      ;;
+;;           (setq copilot-disable-predicates (list (lambda () t)))				      ;;
+;;           (copilot-clear-overlay)								      ;;
+;;           (run-with-idle-timer								      ;;
+;;            1.0										      ;;
+;;            nil										      ;;
+;;            (lambda ()									      ;;
+;;              (setq copilot-disable-predicates pre-copilot-disable-predicates)))))		      ;;
+;;     (error handler)))									      ;;
+;; 												      ;;
+;; (advice-add 'keyboard-quit :before #'cvh/copilot-quit)					      ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Silence compiler warnings as they are disruptive
 (setq native-comp-async-report-warnings-errors nil)
@@ -217,61 +223,47 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;;;;;;;;;;;;; Setup ;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-package default-text-scale
-    :ensure t
-    :config
-    (setq default-text-scale-amount 8)
-    :bind
-    ;; Plus makes it better
-    ("M-+" . default-text-scale-increase)
-    ;; Underscore makes it smaller (- is already bound)
-    ("M-_" . default-text-scale-decrease))
 
-;; `M-x combobulate' (default: `C-c o o') to start using Combobulate
-;; (use-package treesit-auto
-;;   :preface
-;;   (defun mp-setup-install-grammars ()
-;;     "Install Tree-sitter grammars if they are absent."
-;;     (interactive)
-;;     (dolist (grammar
-;;              '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-;; 	       (cmake "https://github.com/uyha/tree-sitter-cmake")
-;; 	       (css "https://github.com/tree-sitter/tree-sitter-css")
-;; 	       (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-;; 	       (go "https://github.com/tree-sitter/tree-sitter-go")
-;; 	       (html "https://github.com/tree-sitter/tree-sitter-html")
-;; 	       (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-;; 	       (json "https://github.com/tree-sitter/tree-sitter-json")
-;; 	       (make "https://github.com/alemuller/tree-sitter-make")
-;; 	       (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-;; 	       (python "https://github.com/tree-sitter/tree-sitter-python")
-;; 	       ;; (rust "https://github.com/tree-sitter/tree-sitter-rust")
-;; 	       (toml "https://github.com/tree-sitter/tree-sitter-toml")
-;; 	       (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-;; 	       (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-;; 	       (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-;;       (add-to-list 'treesit-language-source-alist grammar)
-;;       ;; Only install `grammar' if we don't already have it
-;;       ;; installed. However, if you want to *update* a grammar then
-;;       ;; this obviously prevents that from happening.
-;;       (unless (treesit-language-available-p (car grammar))
-;;         (treesit-install-language-grammar (car grammar)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; Solidity support									       ;;
+;; (setq solidity-solc-path "/home/djhunter67/.BUILDS/solidity-0.8.23/build/solc/solc")	       ;;
+;; ;;TODO										       ;;
+;; ;; install solium or ethlint								       ;;
+;; 											       ;;
+;; (require 'solidity-mode)								       ;;
+;; (setq solidity-comment-style 'slash) ;; // comments					       ;;
+;; (define-key solidity-mode-map (kbd "C-c C-p") 'solidity-estimate-gas-at-point)	       ;;
+;; 											       ;;
+;; ;; Solidity flycheck									       ;;
+;; (require 'solidity-flycheck)								       ;;
+;; (setq solidity-flycheck-solc-checker-active t)					       ;;
+;; ;; TODO										       ;;
+;; ;; install solium or ethlint for flycheck						       ;;
+;; 											       ;;
+;; ;; Solidity std contracts checker							       ;;
+;; (setq flycheck-solidity-solc-addstd-contracts t)					       ;;
+;; ;; TODO										       ;;
+;; ;; Solium or Ethlint RC file								       ;;
+;; 											       ;;
+;; ;; Solidity company									       ;;
+;; (require 'company-solidity)								       ;;
+;; ;; Company can use local variables							       ;;
+;; (add-hook 'solidity-mode-hook							       ;;
+;; 	(lambda ()									       ;;
+;; 	(set (make-local-variable 'company-backends)					       ;;
+;; 		(append '((company-solidity company-capf company-dabbrev-code))		       ;;
+;; 			company-backends))))						       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;   ;; Optional, but recommended. Tree-sitter enabled major modes are
-;;   ;; distinct from their ordinary counterparts.
-;;   ;;
-;;   ;; You can remap major modes with `major-mode-remap-alist'. Note
-;;   ;; that this does *not* extend to hooks! Make sure you migrate them
-;;   ;; also
-;;   (dolist (mapping '((python-mode . python-ts-mode)
-;;                      (css-mode . css-ts-mode)
-;;                      (typescript-mode . tsx-ts-mode)
-;;                      (json-mode . json-ts-mode)
-;;                      (js-mode . js-ts-mode)
-;;                      (css-mode . css-ts-mode)
-;; 		     ;; (rust-mode . rust-ts-mode)
-;;                      (yaml-mode . yaml-ts-mode)))
-;;     (add-to-list 'major-mode-remap-alist mapping))
+
+;; Install origami for code folding
+(use-package origami
+  :ensure t
+  :config
+  (global-origami-mode)
+  (define-key origami-mode-map (kbd "C-c f") 'origami-recursively-toggle-node)
+  (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes))
+>>>>>>> Stashed changes
 
 ;;   :config
 ;;   (mp-setup-install-grammars)
@@ -696,7 +688,7 @@ cleared, make sure the overlay doesn't come back too soon."
 (setq delete-by-moving-to-trash t)
 
 ;; Keep dired to one buffer
-(use-package dired-single)
+;; (use-package dired-single)
 
 ;; Configure dired
 (use-package dired
@@ -737,7 +729,7 @@ cleared, make sure the overlay doesn't come back too soon."
   ;; :config
   ;; (define-key dired-mode-map (kbd "C-H") 'dired-hide-dotfiles-mode))
 
-(setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
+;; (setq org-plantuml-jar-path (expand-file-name "/home/djhunter67/.BUILDS/plantuml-1.2023.5.jar"))
 ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 

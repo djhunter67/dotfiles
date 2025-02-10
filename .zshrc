@@ -144,9 +144,9 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias l="ls -lFh --color=auto"
-alias ll="pls --align --multi-cols -d group -d size -d atime -u decimal -s atime --dirs --files"
+alias ll="pls -d std -u decimal"
 alias icat="kitty +kitten icat"
-alias la="pls -a -d -s mtime -u decimal -i nerd -c --no-dirs"
+alias la="pls -a true -d all -s mtime -u decimal -i true -c true"
 alias dif="kitty +kitten diff"
 
 # cd into the old directory
