@@ -260,6 +260,18 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Revert Dired buffer to live reload
 (setq global-auto-revert-non-file-buffers t)
 
+;; Set GNU style indenting for C
+(setq c-default-style "linux" c-basic-offset 4)
+
+;; Turn on electric pair mode
+(electric-pair-mode 1)
+
+;; Turn on semantic mode globally
+(semantic-mode 1)
+
+;; Detect if in c-mode and turn on cmake-ide
+(add-hook 'c-mode-hook 'cmake-ide-load)
+
 ;; You will most likely need to adjust this font size for your system!
 (defvar cvh/default-font-size 90)
 (defvar cvh/default-variable-font-size 90)
