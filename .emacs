@@ -79,16 +79,31 @@
 ;; Install straight.el
 
 (defvar bootstrap-version)									      ;;
-(let ((bootstrap-file									      ;;
-       (expand-file-name "straight.el/bootstrap.el" user-emacs-directory))			      ;;
-      (bootstrap-version 6))									      ;;
-  (unless (file-exists-p bootstrap-file)							      ;;
-    (with-current-buffer									      ;;
-	(url-retrieve-synchronously								      ;;
-	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"	      ;;
-	 'silent 'inhibit-cookies)								      ;;
-      (goto-char (point-max))))								      ;;
-  (load bootstrap-file nil 'nomessage))							      ;;
+;; (let ((bootstrap-file									      ;;
+;;        (expand-file-name "straight.el/bootstrap.el" user-emacs-directory))			      ;;
+;;       (bootstrap-version 6))									      ;;
+;;   (unless (file-exists-p bootstrap-file)							      ;;
+;;     (with-current-buffer									      ;;
+;; 	(url-retrieve-synchronously								      ;;
+;; 	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"	      ;;
+;; 	 'silent 'inhibit-cookies)								      ;;
+;;       (goto-char (point-max))))								      ;;
+;;   (load bootstrap-file nil 'nomessage))							      ;;
+
+(let ((bootstrap-file
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 												      ;;
 (use-package copilot										      ;;
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))			      ;;
@@ -140,14 +155,14 @@
   (if (and copilot-mode cvh/copilot-manual-mode)						      ;;
       (progn											      ;;
         (message "deactivating copilot")							      ;;
-        (global-copilot-mode -1)								      ;;
+        (copilot-mode -1)								      ;;
         (setq cvh/copilot-manual-mode nil))							      ;;
     (if copilot-mode										      ;;
         (progn										      ;;
           (message "activating copilot manual mode")						      ;;
           (setq cvh/copilot-manual-mode t))							      ;;
       (message "activating copilot mode")							      ;;
-      (global-copilot-mode))))								      ;;
+      (copilot-mode))))								      ;;
 												      ;;
 (define-key global-map (kbd "C-.") #'cvh/copilot-change-activation)				      ;;
 												      ;;
@@ -167,6 +182,7 @@ is available. Useful if you tend to hammer your keys like I do."				      ;;
 (define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)	      ;;
 (define-key copilot-mode-map (kbd "M-C-=") #'copilot-accept-completion-by-line)		      ;;
 (define-key global-map (kbd "M-C-,") #'cvh/copilot-complete-or-accept)			      ;;
+;; (add-to-list 'copilot-indentation-alist '(org-mode 2))
 												      ;;
 (defun cvh/copilot-tab ()									      ;;
   "Tab command that will complet with copilot if a completion is				      ;;
