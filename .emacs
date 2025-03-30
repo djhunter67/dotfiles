@@ -1,4 +1,4 @@
-;;; Commentary: Personal emacs config of Hunter, Christerpher
+;; Commentary: Personal emacs config of Hunter, Christerpher
 
 ;; -*- lexical-binding: t; -*-
 
@@ -354,6 +354,8 @@ cleared, make sure the overlay doesn't come back too soon."
   (setq flycheck-python-pyright-typechecking-mode "strict")
   ;; ruff-lsp
   (setq flycheck-ruff-executable "ruff-lsp")
+  ;; Rust
+  (setq flycheck-rust-executable "cargo")
   )
 
 (custom-set-variables
@@ -383,7 +385,7 @@ cleared, make sure the overlay doesn't come back too soon."
   (lsp-eldoc-render-all t)
   (lsp-idle-delay 0.1)
   ;; enable / disable the hints as you prefer:
-  (lsp-rust-analyzer-server-display-inlay-hints t)
+  (lsp-inlay-hint-enable nil)
   (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
   (lsp-rust-analyzer-display-chaining-hints t)
   (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
@@ -412,19 +414,24 @@ cleared, make sure the overlay doesn't come back too soon."
 (add-hook 'rust-mode-hook 'origami-mode)
 (add-hook 'rust-mode-hook 'yas-minor-mode)
 
+;; LSP for rust
+(add-hook 'rust-mode-hook 'lsp-deferred)
+
 ;;Company mode 
 (use-package company
   :ensure
   :custom
   (company-idle-delay 0.2) ;; how long to wait until popup, was 0.5
   (company-minimum-prefix-length 1) ;; how many chars before autocomplete
-  ;; (company-begin-commands nif) ;; uncomment to disable popup
+  ;; (company-begin-commands nil) ;; uncomment to disable popup
   :bind
   (:map company-active-map
 	("C-n". company-select-next-or-abort)
 	("C-p". company-select-previous)
 	;; ("M-<". company-select-first)
 	;; ("M->". company-select-last)))
+	("<tab>". cvh/tab-indent-or-complete)
+	("TAB". cvh/tab-indent-or-complete)
 	))
 
 (use-package yasnippet
@@ -521,6 +528,9 @@ cleared, make sure the overlay doesn't come back too soon."
 (global-unset-key (kbd "C-<down-mouse-1>"))
 (global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
 
+;; Ensure TAB is indent-for-command
+(global-set-key (kbd "TAB") 'cvh/tab-indent-or-complete)
+
 ;; Delete line from cursor to beginning
 (global-set-key (kbd "S-<delete>") 'kill-whole-line)
 
@@ -570,6 +580,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; Delete line from cursor to beginning
 (global-set-key (kbd "S-<delete>") 'kill-whole-line)
+(global-set-key (kbd "S-h") 'kill-whole-line)
 
 ;; Immediately kill the focused buffer
 (global-unset-key (kbd "C-x k"))
@@ -578,7 +589,7 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Eldoc at point in rust-mode only; set C-i to eldoc-buffer-at-point
 (add-hook 'rust-mode-hook
 	  (lambda ()
-	    (local-set-key (kbd "C-i") 'lsp-ui-doc-show)))
+	    (local-set-key (kbd "C-i") 'eldoc-print-current-symbol-info)))
 
 ;; Make shebang (#!) file executable when saved
 (add-hook 'after-save-hook
@@ -655,18 +666,6 @@ cleared, make sure the overlay doesn't come back too soon."
 	      (local-set-key (kbd "C-S-i") 'cvh/indent-buffer))
 	    t))
 
-;; if rust-mode is enabled, set C-S-i to rustfmt-buffer
-(add-hook 'rust-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "C-S-i") 'lsp-format-buffer)))
-
-(add-hook 'rust-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "C-c C-a") 'lsp-execute-code-action)))
-
-(add-hook 'rust-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "<tab>") 'indent-for-tab-command)))
 
 (require 'multiple-cursors)
 
@@ -1360,6 +1359,19 @@ there's a region, all lines that region covers will be duplicated."
 
 ;; Disable warnings on cargo test
 (setq rustic-cargo-test-disable-warnings t)
+
+;; if rust-mode is enabled, set C-S-i to rustfmt-buffer
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-S-i") 'lsp-format-buffer)))
+
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-c C-a") 'lsp-execute-code-action)))
+
+(add-hook 'rust-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "<tab>") 'cvh/tab-indent-or-complete)))
 
 (use-package dap-mode
   :config
