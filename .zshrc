@@ -337,3 +337,10 @@ unset ZSH_AUTOSUGGEST_USE_ASYNC
 
 export GPG_TTY=$(tty)
 export PATH=/home/djhunter67/.local/bin:/home/djhunter67/.local/bin:/home/djhunter67/bin:/home/djhunter67/.cargo/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/djhunter67/.cargo/bin:/usr/local/go/bin
+
+# bun completions
+[ -s "/home/djhunter67/.bun/_bun" ] && source "/home/djhunter67/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

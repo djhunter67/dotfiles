@@ -208,8 +208,8 @@ cleared, make sure the overlay doesn't come back too soon."
 (setq global-auto-revert-non-file-buffers t)
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar cvh/default-font-size 110)
-(defvar cvh/default-variable-font-size 110)
+(defvar cvh/default-font-size 60)
+(defvar cvh/default-variable-font-size 60)
 
 (require 'package)
 
