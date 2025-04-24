@@ -252,8 +252,8 @@ cleared, make sure the overlay doesn't come back too soon."
 (add-hook 'c-mode-hook 'cmake-ide-load)
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar cvh/default-font-size 90)
-(defvar cvh/default-variable-font-size 90)
+(defvar cvh/default-font-size 60)
+(defvar cvh/default-variable-font-size 60)
 
 (require 'package)
 

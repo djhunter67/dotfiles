@@ -331,8 +331,8 @@ source /home/djhunter67/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 unset ZSH_AUTOSUGGEST_USE_ASYNC
 
-# Generated for envman. Do not edit.
-[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+export GPG_TTY=$(tty)
+export PATH=/home/djhunter67/.local/bin:/home/djhunter67/.local/bin:/home/djhunter67/bin:/home/djhunter67/.cargo/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/djhunter67/.cargo/bin:/usr/local/go/bin
 
 # bun completions
 [ -s "/home/djhunter67/.bun/_bun" ] && source "/home/djhunter67/.bun/_bun"
