@@ -1,6 +1,7 @@
 [user]
 	name = Christerpher Hunter
 	email = djhunter67@gmail.com
+	signingkey = /home/djhunter67/.ssh/id_ed25519_signing_key.pub
 
 [credential]
 	helper = cache --timeout=10800000
@@ -28,3 +29,5 @@
 	sshsign = true
 
 
+[gpg]
+	format = ssh
