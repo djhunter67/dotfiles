@@ -272,6 +272,9 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; Detect if in c-mode and turn on cmake-ide
 (add-hook 'c-mode-hook 'cmake-ide-load)
 
+;; OpenCL LSP support
+(setq auto-mode-alist (cons '("\.cl$" . opencl-c-mode) auto-mode-alist))
+
 ;; You will most likely need to adjust this font size for your system!
 (defvar cvh/default-font-size 90)
 (defvar cvh/default-variable-font-size 90)
@@ -527,9 +530,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (global-unset-key (kbd "C-<down-mouse-1>"))
 (global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
-
-;; Ensure TAB is indent-for-command
-(global-set-key (kbd "TAB") 'cvh/tab-indent-or-complete)
 
 ;; Delete line from cursor to beginning
 (global-set-key (kbd "S-<delete>") 'kill-whole-line)
@@ -1369,9 +1369,6 @@ there's a region, all lines that region covers will be duplicated."
 	  (lambda ()
 	    (local-set-key (kbd "C-c C-a") 'lsp-execute-code-action)))
 
-(add-hook 'rust-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "<tab>") 'cvh/tab-indent-or-complete)))
 
 (use-package dap-mode
   :config
@@ -1470,10 +1467,13 @@ there's a region, all lines that region covers will be duplicated."
   :hook (company-mode . company-box-mode))
 
 ;; Set up scss mode
-(setq exec-path (cons (expand-file-name "/usr/bin/sass") exec-path))
-(autoload 'scss-mode "scss-mode")
-(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
+;; (defun cvh/switch-to-scss-mode ()
+;;   "Switch to scss-mode after css-mode is enabled."
+;;   (when (and (string-equal (file-name-extension buffer-file-name) "scss")
+;;              (derived-mode-p 'css-mode))
+;;     (scss-mode)))
 
+;; (add-hook 'css-mode-hook 'cvh/switch-to-scss-mode)
 
 (require 'ivy-posframe)
 ;; display at `ivy-posframe-style'
@@ -1483,13 +1483,8 @@ there's a region, all lines that region covers will be duplicated."
 ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-bottom-left)))
 ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-bottom-left)))
 ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center)))
+;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-point)))
 (ivy-posframe-mode 1)
-
-;; Live preview of markdown
-(defun markdown-html (buffer)
-  (princ (with-current-buffer buffer
-	   (format "<!DOCTYPE html><html><title>Impatient Markdown</title><xmp theme=\"united\" style=\"display:none;\"> %s  </xmp><script src=\"http://ndossougbe.github.io/strapdown/dist/strapdown.js\"></script></html>" (buffer-substring-no-properties (point-min) (point-max))))
-	 (current-buffer)))
 
 ;; SQL lsp
 ;; (add-hook 'sql-mode-hook 'lsp)

@@ -5,3 +5,4 @@ keybind = ctrl+x>2=new_split:down
 keybind = ctrl+x>+=equalize_splits
 keybind = global:ctrl+grave_accent=toggle_quick_terminal
 theme = flexoki-dark
+keybind = ctrl+;=unbind

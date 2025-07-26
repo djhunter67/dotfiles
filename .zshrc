@@ -132,8 +132,8 @@ export LSP_USE_PLISTS=true
 # alias pip='/usr/local/bin/python3.10 -m pip'
 # [ "$TERM" = "xterm-kitty" ] && alias ssh='kitty +kitten ssh'
 export TERM=xterm
-alias Ripley='ssh root@192.168.110.24'
-alias ubuntu_box='kitty +kitten ssh hunter_desk@10.10.30.119'
+# alias Ripley='ssh root@192.168.110.24'
+alias Ripley='ssh root@10.20.20.24'
 #alias venv="python -m venv venv && source venv/bin/activate && pip install -U pip setuptools &> /dev/null && git init &> /dev/null && touch README.md && git add . && git cm 'init git' && git st"
 alias webcam="sudo modprobe v4l2loopback exclusive_caps=1  max_buffers=2; pkill -f gphoto2; gphoto2 --stdout --set-config liveviewsize=0 --capture-movie | ffmpeg -y -hwaccel cuda -hwaccel_output_format cuda -i - -c:v copy -f v4l2 /dev/video0"
 alias ..="cd .."
@@ -141,7 +141,7 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias l="ls -lFhg --color=auto"
-alias ll="/usr/bin/pls -d group -d size -d atime -u decimal -s atime"
+alias ll="/usr/bin/pls -d group -d size -d mtime -u decimal -s mtime --time-fmt %d%h:%H:%M --icon emoji"
 alias icat="kitty +kitten icat"
 alias la="/usr/bin/pls -a -d -s mtime -u decimal -i nerd -c --no-dirs"
 # alias dif="kitty +kitten diff"
@@ -344,3 +344,4 @@ unset ZSH_AUTOSUGGEST_USE_ASYNC
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+export VCPKG_ROOT=/home/djhunter67/.local/share/vcpkg
